@@ -3,108 +3,391 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Planner (No Login Sync + Calendar)</title>
+  <title>Planner Pro (No Login Sync)</title>
   <style>
     :root{
-      --bg:#0b0f14; --text:#e8eef6; --muted:#9fb0c3; --line:#1d2a3a;
-      --good:#39d98a; --bad:#ff5c7a; --warn:#ffd166;
+      --bg:#0b0f14;
+      --panel:#0f1621;
+      --panel2:#0c131d;
+      --text:#e8eef6;
+      --muted:#9fb0c3;
+      --line:#1d2a3a;
+      --line2:#26364a;
+
+      --acc:#5cc8ff;
+      --acc2:#9c7bff;
+
+      --good:#39d98a;
+      --bad:#ff5c7a;
+      --warn:#ffd166;
+
+      --shadow: 0 10px 40px rgba(0,0,0,.35);
+      --radius: 16px;
+      --radius2: 22px;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-    header{max-width:980px;margin:0 auto;padding:18px 16px 8px}
-    h1{margin:0 0 6px;font-size:18px}
-    .sub{color:var(--muted);font-size:13px;line-height:1.35}
-    .wrap{max-width:980px;margin:0 auto;padding:12px 16px 28px;display:grid;gap:12px;grid-template-columns:1.2fr .8fr}
-    @media(max-width:900px){.wrap{grid-template-columns:1fr}}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(92,200,255,.10), transparent 60%),
+                  radial-gradient(1200px 700px at 80% 0%, rgba(156,123,255,.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
 
-    .card{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);overflow:hidden}
-    .bar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.15);flex-wrap:wrap}
+    /* Layout */
+    .page{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 16px 28px;
+      display:grid;
+      gap:12px;
+      grid-template-columns: 1.25fr .75fr;
+      align-items:start;
+    }
+    @media(max-width:980px){
+      .page{grid-template-columns:1fr}
+    }
+
+    /* Header */
+    header{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 16px 6px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .title{
+      display:flex;flex-direction:column;gap:6px;
+    }
+    h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .sub{margin:0;color:var(--muted);font-size:13px;line-height:1.35}
+    .topPills{display:flex;gap:10px;flex-wrap:wrap}
+
+    /* Cards */
+    .card{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));
+      border-radius: var(--radius2);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    .bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      flex-wrap:wrap;
+    }
     .content{padding:12px}
-
-    .pill{
-      border:1px solid var(--line);border-radius:999px;padding:6px 10px;
-      font-size:12px;color:var(--muted);background:rgba(0,0,0,.18);
-      display:flex;gap:8px;align-items:center;white-space:nowrap
-    }
-    .pill b{color:var(--text)}
-    .btn{
-      border:1px solid var(--line);background:rgba(0,0,0,.18);color:var(--text);
-      border-radius:12px;padding:8px 10px;font-size:13px;cursor:pointer
-    }
-    .btn:hover{border-color:rgba(92,200,255,.5)}
-    .btn.primary{border-color:rgba(92,200,255,.55);background:rgba(92,200,255,.10)}
-    .btn.good{border-color:rgba(57,217,138,.55);background:rgba(57,217,138,.10)}
-
-    input{
-      border:1px solid var(--line);background:rgba(0,0,0,.2);color:var(--text);
-      border-radius:12px;padding:8px 10px;font-size:13px;outline:none
-    }
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .muted{color:var(--muted);font-size:12px}
 
+    /* Pills & buttons */
+    .pill{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      color:var(--muted);
+      display:flex;gap:8px;align-items:center;
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text);font-weight:700}
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:var(--warn);
+      display:inline-block;
+      box-shadow:0 0 0 3px rgba(255,209,102,.10);
+    }
+    .dot.ok{background:var(--good); box-shadow:0 0 0 3px rgba(57,217,138,.10)}
+    .dot.bad{background:var(--bad); box-shadow:0 0 0 3px rgba(255,92,122,.10)}
+
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      border-radius:14px;
+      padding:8px 10px;
+      font-size:13px;
+      cursor:pointer;
+      transition:.15s;
+      user-select:none;
+    }
+    .btn:hover{border-color:rgba(92,200,255,.45); transform: translateY(-1px)}
+    .btn:active{transform: translateY(0px)}
+    .btn.primary{border-color:rgba(92,200,255,.65); background:rgba(92,200,255,.10)}
+    .btn.good{border-color:rgba(57,217,138,.55); background:rgba(57,217,138,.10)}
+    .btn.bad{border-color:rgba(255,92,122,.55); background:rgba(255,92,122,.10)}
+    .btn.ghost{opacity:.9}
+    .btn.small{padding:7px 9px; font-size:12px; border-radius:12px}
+
+    /* Inputs */
+    input, select, textarea{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      border-radius:14px;
+      padding:8px 10px;
+      font-size:13px;
+      outline:none;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(92,200,255,.55);
+      box-shadow:0 0 0 3px rgba(92,200,255,.10);
+    }
+    textarea{min-height:70px; resize:vertical}
+
+    /* Segmented tabs */
+    .seg{
+      display:inline-flex;
+      border:1px solid var(--line);
+      border-radius:999px;
+      overflow:hidden;
+      background:rgba(0,0,0,.18);
+    }
+    .seg button{
+      border:0;background:transparent;color:var(--muted);
+      padding:8px 10px;cursor:pointer;font-size:12px;
+    }
+    .seg button.active{
+      color:var(--text);
+      background: linear-gradient(90deg, rgba(92,200,255,.14), rgba(156,123,255,.12));
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:16px;
+      bottom:16px;
+      width:min(520px, calc(100% - 32px));
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(10,16,24,.92);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      padding:12px;
+      display:none;
+      gap:10px;
+      align-items:flex-start;
+      z-index:50;
+    }
+    .toast.show{display:flex}
+    .toast .tTitle{font-weight:800; font-size:13px}
+    .toast .tBody{color:var(--muted); font-size:12px; line-height:1.35}
+    .toast .tActions{margin-left:auto; display:flex; gap:8px; align-items:center}
+    .toast .badge{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      background:rgba(0,0,0,.18);
+    }
+
+    /* Inline “confirm bar” (no confirm popups) */
+    .confirmBar{
+      border:1px dashed rgba(255,209,102,.45);
+      background:rgba(255,209,102,.08);
+      border-radius:16px;
+      padding:10px;
+      display:none;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:10px;
+    }
+    .confirmBar.show{display:flex}
+    .confirmBar .msg{color:var(--muted); font-size:12px; line-height:1.35}
+
+    /* Two-panel planner */
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+
+    /* Lists */
     .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+
     .item{
-      border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.14);
-      padding:10px;display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(0,0,0,.14);
+      padding:10px;
+      display:grid;
+      gap:10px;
+      align-items:center;
+    }
+
+    /* Checklist item layout */
+    .todo{
+      grid-template-columns: 26px 1fr auto;
     }
     .check{
       width:18px;height:18px;border-radius:6px;border:1px solid var(--line);
-      cursor:pointer;display:grid;place-items:center;user-select:none
+      cursor:pointer;display:grid;place-items:center;user-select:none;
     }
     .check.done{border-color:rgba(57,217,138,.6);background:rgba(57,217,138,.12)}
     .check.done::after{content:"✓";color:var(--good);font-weight:900;font-size:12px}
-    .name{outline:none;border-radius:10px;padding:2px 6px}
+
+    .name{
+      outline:none;border-radius:12px;padding:2px 6px;
+      min-height:22px;
+    }
     .name:focus{box-shadow:0 0 0 3px rgba(92,200,255,.12);background:rgba(92,200,255,.06)}
 
-    .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:rgba(0,0,0,.18)}
-    .seg button{border:0;background:transparent;color:var(--muted);padding:8px 10px;cursor:pointer;font-size:12px}
-    .seg button.active{color:var(--text);background:rgba(92,200,255,.10)}
+    /* Schedule item layout */
+    .block{
+      grid-template-columns: 68px 1fr auto;
+    }
+    .timeBox{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      border-radius:14px;
+      padding:7px 8px;
+      display:flex;flex-direction:column;gap:3px;
+      align-items:flex-start;
+      min-width:68px;
+    }
+    .timeBox b{color:var(--text); font-weight:800}
+    .mini{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+    }
+    .tag{
+      font-size:11px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:2px 8px;
+      color:var(--muted);
+      background:rgba(0,0,0,.18);
+      font-family:var(--mono);
+    }
+    .tag.acc{border-color:rgba(92,200,255,.35); color:rgba(92,200,255,.85)}
+    .tag.good{border-color:rgba(57,217,138,.35); color:rgba(57,217,138,.85)}
+    .tag.bad{border-color:rgba(255,92,122,.35); color:rgba(255,92,122,.85)}
 
-    .statusDot{width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block}
-    .dotOk{background:var(--good)}
-    .dotBad{background:var(--bad)}
+    /* Timeline */
+    .timeline{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background:rgba(0,0,0,.14);
+      padding:10px;
+      margin-top:10px;
+    }
+    .tlRow{
+      display:grid;
+      grid-template-columns: 54px 1fr;
+      gap:10px;
+      align-items:stretch;
+      padding:8px 0;
+      border-top:1px solid rgba(29,42,58,.65);
+    }
+    .tlRow:first-child{border-top:0}
+    .tlTime{
+      font-family:var(--mono);
+      color:var(--muted);
+      font-size:12px;
+      padding-top:4px;
+    }
+    .tlCard{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(0,0,0,.12);
+      padding:8px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .tlCard .top{
+      display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+    }
+    .tlTitle{font-weight:800;font-size:13px}
+    .tlMeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
     /* Calendar */
     .calDow{font-size:11px;color:var(--muted);text-align:center;padding:6px 0;}
     .calDay{
-      border:1px solid var(--line);border-radius:14px;
+      border:1px solid var(--line);
+      border-radius:16px;
       background:rgba(0,0,0,.14);
-      min-height:64px;padding:8px;cursor:pointer;position:relative;user-select:none;
+      min-height:66px;
+      padding:8px;
+      cursor:pointer;
+      position:relative;
+      user-select:none;
+      transition:.12s;
     }
-    .calDay:hover{border-color:rgba(92,200,255,.35)}
-    .calDay.selected{border-color:rgba(92,200,255,.65);box-shadow:0 0 0 3px rgba(92,200,255,.10);}
+    .calDay:hover{border-color:rgba(92,200,255,.35); transform: translateY(-1px)}
+    .calDay.selected{
+      border-color:rgba(92,200,255,.65);
+      box-shadow:0 0 0 3px rgba(92,200,255,.10);
+      transform:none;
+    }
     .calNum{
-      font-size:12px;color:var(--muted);
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      font-size:12px;
+      color:var(--muted);
+      font-family:var(--mono);
     }
     .calMark{
-      position:absolute;right:10px;top:10px;font-weight:900;font-size:16px;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      position:absolute;right:10px;top:10px;
+      font-weight:900;font-size:16px;font-family:var(--mono);
     }
     .calMark.good{color:var(--good)}
     .calMark.bad{color:var(--bad)}
+    .calHint{
+      position:absolute;left:10px;bottom:10px;
+      display:flex; gap:6px; flex-wrap:wrap;
+      opacity:.9;
+    }
+    .calMiniDot{
+      width:7px;height:7px;border-radius:50%;
+      background:rgba(159,176,195,.35);
+      border:1px solid rgba(29,42,58,.8);
+    }
+    .calMiniDot.on{background:rgba(92,200,255,.55)}
+    .calMiniDot.done{background:rgba(57,217,138,.55)}
   </style>
 </head>
+
 <body>
 <header>
-  <h1>Planner (No Login, Cross-Device Sync)</h1>
-  <div class="sub">
-    Enter the same <b>Planner Key</b> on phone + laptop to sync. Use a strong key (like a password).
+  <div class="title">
+    <h1>Planner Pro (No Login, Cross-Device Sync)</h1>
+    <p class="sub">Enter the same <b>Planner Key</b> on phone + laptop to sync. Your key is stored only on the device (localStorage). No popups; all actions are inline.</p>
+  </div>
+
+  <div class="topPills">
+    <span class="pill">Sync: <span id="syncDot" class="dot"></span> <b id="syncLabel">locked</b></span>
+    <span class="pill">Key: <b id="keyLabel">not set</b></span>
+    <span class="pill">Selected: <b id="selLabel">—</b></span>
   </div>
 </header>
 
-<div class="wrap">
-  <!-- LEFT -->
+<div class="page">
+  <!-- LEFT: Planner -->
   <section class="card">
     <div class="bar">
-      <div class="row">
-        <span class="pill">Sync: <span id="syncDot" class="statusDot"></span> <b id="syncLabel">locked</b></span>
-        <span class="pill">Key: <b id="keyLabel">not set</b></span>
-      </div>
       <div class="row">
         <button class="btn" id="pullBtn">Pull</button>
         <button class="btn" id="pushBtn">Push</button>
         <button class="btn" id="clearKeyBtn">Clear key</button>
+      </div>
+      <div class="row">
+        <span class="pill">Autosave: <b id="autosaveLabel">on</b></span>
       </div>
     </div>
 
@@ -114,45 +397,127 @@
         <input id="keyInput" type="password" placeholder="Planner Key (12+ chars recommended)" style="min-width:320px"/>
         <button class="btn primary" id="unlockBtn">Unlock</button>
       </div>
-      <div class="muted" style="margin-top:8px;line-height:1.35">
-        Your key is stored on this device only (localStorage). Don’t forget it.
+
+      <div class="muted" style="margin-top:10px;line-height:1.35">
+        Tip: use a long passphrase. Same key on every device = same planner.
+      </div>
+
+      <div class="confirmBar show" style="margin-top:12px">
+        <div class="msg">
+          <b>Security note:</b> Anyone with your key can read/write your planner row.
+          Use a strong key + enable RLS in Supabase.
+        </div>
       </div>
     </div>
 
     <!-- Planner -->
     <div class="content" id="plannerPane" style="display:none">
-      <div class="bar" style="border:1px solid var(--line);border-radius:14px;margin-bottom:12px">
+      <div class="bar" style="border:1px solid var(--line);border-radius:18px;margin-bottom:12px">
         <div class="row">
           <span class="pill">Date: <b><input id="datePick" type="date"/></b></span>
+
           <span class="seg">
-            <button id="modeDayBtn" class="active">This Day</button>
-            <button id="modeTplBtn">Template</button>
+            <button id="tabDay" class="active">Day</button>
+            <button id="tabTemplate">Template</button>
+          </span>
+
+          <span class="seg">
+            <button id="viewChecklist" class="active">Checklist</button>
+            <button id="viewSchedule">Schedule</button>
+            <button id="viewTimeline">Timeline</button>
           </span>
         </div>
+
         <div class="row">
-          <button class="btn primary" id="addTaskBtn">+ Add task</button>
+          <button class="btn primary" id="addBtn">+ Add</button>
           <button class="btn" id="applyTplBtn">Apply template → day</button>
-          <button class="btn good" id="lockBtn">Lock (auto ✅/❌)</button>
+          <button class="btn good" id="lockBtn">Lock day (auto ✅/❌)</button>
         </div>
       </div>
 
       <div class="row" style="justify-content:space-between">
         <div>
-          <div style="font-weight:700" id="titleLeft">This Day</div>
-          <div class="muted" id="subtitleLeft">Check tasks, then lock the day.</div>
+          <div style="font-weight:900" id="leftTitle">Day</div>
+          <div class="muted" id="leftSubtitle">Checklist + schedule live here. Lock the day to finalize ✅/❌.</div>
         </div>
         <div class="pill"><b id="progress">0/0</b> done</div>
       </div>
 
-      <div class="list" id="taskList"></div>
+      <!-- Editor: Add item (inline, no prompt) -->
+      <div class="card" style="margin-top:10px; border-radius:18px">
+        <div class="bar" style="border-bottom:1px solid var(--line)">
+          <div class="row">
+            <span class="pill">Quick Add</span>
+            <span class="muted">Adds to the current view (Checklist or Schedule).</span>
+          </div>
+          <div class="row">
+            <button class="btn small" id="hideAddBtn">Hide</button>
+          </div>
+        </div>
+        <div class="content" id="addPane">
+          <div class="row" style="align-items:flex-end">
+            <div style="flex:1; min-width:220px">
+              <div class="muted" style="margin:0 0 6px">Title</div>
+              <input id="addTitle" placeholder="e.g., 90-min Study Block / Rings Workout" style="width:100%"/>
+            </div>
+
+            <div id="schedFields" style="display:none" class="row">
+              <div>
+                <div class="muted" style="margin:0 0 6px">Start</div>
+                <input id="addStart" type="time" value="09:00"/>
+              </div>
+              <div>
+                <div class="muted" style="margin:0 0 6px">Duration</div>
+                <select id="addDur">
+                  <option value="30">30m</option>
+                  <option value="45">45m</option>
+                  <option value="60">60m</option>
+                  <option value="75">75m</option>
+                  <option value="90" selected>90m</option>
+                  <option value="120">120m</option>
+                </select>
+              </div>
+              <div>
+                <div class="muted" style="margin:0 0 6px">Tag</div>
+                <select id="addTag">
+                  <option value="deep">deep</option>
+                  <option value="workout">workout</option>
+                  <option value="admin">admin</option>
+                  <option value="focus">focus</option>
+                  <option value="life">life</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn primary" id="addCommit">Add</button>
+          </div>
+
+          <div class="muted" style="margin-top:10px;line-height:1.35">
+            No popups. If you need “danger” actions (delete/apply template), you’ll get an inline confirm bar.
+          </div>
+
+          <div class="confirmBar" id="confirmBar">
+            <div class="msg" id="confirmMsg">Confirm?</div>
+            <div class="row">
+              <button class="btn bad" id="confirmYes">Yes</button>
+              <button class="btn" id="confirmNo">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Views -->
+      <div id="viewChecklistPane" class="list"></div>
+      <div id="viewSchedulePane" class="list" style="display:none"></div>
+      <div id="viewTimelinePane" class="timeline" style="display:none"></div>
 
       <div class="muted" style="margin-top:10px;line-height:1.35">
-        Autosaves to Supabase ~1s after you stop editing.
+        Autosaves ~1s after edits. Pull/Push are manual overrides.
       </div>
     </div>
   </section>
 
-  <!-- RIGHT Calendar -->
+  <!-- RIGHT: Calendar -->
   <aside class="card">
     <div class="bar">
       <div class="row" style="justify-content:space-between; width:100%">
@@ -167,20 +532,32 @@
       <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;"></div>
 
       <div class="muted" style="margin-top:10px;line-height:1.35">
-        ✅ / ❌ appears after you lock that date.
+        ✅/❌ appears after lock. Dots show if schedule/checklist has content.
       </div>
     </div>
   </aside>
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div>
+    <div class="tTitle" id="toastTitle">Title</div>
+    <div class="tBody" id="toastBody">Body</div>
+  </div>
+  <div class="tActions">
+    <span class="badge" id="toastBadge">info</span>
+    <button class="btn small" id="toastClose">Close</button>
+  </div>
+</div>
+
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // ✅ Paste your Supabase Settings → API values here
+  // ✅ Your Supabase Settings → API
   const SUPABASE_URL = "https://lugcbtddrzpkfrlpawuq.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1Z2NidGRkcnpwa2ZybHBhd3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NjQxNzAsImV4cCI6MjA4NTU0MDE3MH0.H3lp8QSMWQsUbCEEK-U4SZKM7oAv8tXUTq99AK7QQK0";
 
-  // We'll attach x-planner-key-hash header on every request
+  // --- Key header ---
   let keyHash = localStorage.getItem("PLANNER_KEY_HASH") || "";
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -197,6 +574,7 @@
   const syncDot = document.getElementById("syncDot");
   const syncLabel = document.getElementById("syncLabel");
   const keyLabel = document.getElementById("keyLabel");
+  const selLabel = document.getElementById("selLabel");
 
   const keyPane = document.getElementById("keyPane");
   const plannerPane = document.getElementById("plannerPane");
@@ -208,22 +586,52 @@
   const pushBtn = document.getElementById("pushBtn");
 
   const datePick = document.getElementById("datePick");
-  const modeDayBtn = document.getElementById("modeDayBtn");
-  const modeTplBtn = document.getElementById("modeTplBtn");
+
+  const tabDay = document.getElementById("tabDay");
+  const tabTemplate = document.getElementById("tabTemplate");
+
+  const viewChecklist = document.getElementById("viewChecklist");
+  const viewSchedule = document.getElementById("viewSchedule");
+  const viewTimeline = document.getElementById("viewTimeline");
+
   const applyTplBtn = document.getElementById("applyTplBtn");
-  const addTaskBtn = document.getElementById("addTaskBtn");
   const lockBtn = document.getElementById("lockBtn");
 
-  const titleLeft = document.getElementById("titleLeft");
-  const subtitleLeft = document.getElementById("subtitleLeft");
+  const leftTitle = document.getElementById("leftTitle");
+  const leftSubtitle = document.getElementById("leftSubtitle");
   const progressEl = document.getElementById("progress");
-  const taskList = document.getElementById("taskList");
+
+  const addBtn = document.getElementById("addBtn");
+  const hideAddBtn = document.getElementById("hideAddBtn");
+  const addPane = document.getElementById("addPane");
+  const addTitle = document.getElementById("addTitle");
+  const schedFields = document.getElementById("schedFields");
+  const addStart = document.getElementById("addStart");
+  const addDur = document.getElementById("addDur");
+  const addTag = document.getElementById("addTag");
+  const addCommit = document.getElementById("addCommit");
+
+  const confirmBar = document.getElementById("confirmBar");
+  const confirmMsg = document.getElementById("confirmMsg");
+  const confirmYes = document.getElementById("confirmYes");
+  const confirmNo  = document.getElementById("confirmNo");
+
+  const viewChecklistPane = document.getElementById("viewChecklistPane");
+  const viewSchedulePane = document.getElementById("viewSchedulePane");
+  const viewTimelinePane = document.getElementById("viewTimelinePane");
 
   const calTitle = document.getElementById("calTitle");
   const calGrid  = document.getElementById("calGrid");
   const calDow   = document.getElementById("calDow");
   const prevMonthBtn = document.getElementById("prevMonthBtn");
   const nextMonthBtn = document.getElementById("nextMonthBtn");
+
+  const toast = document.getElementById("toast");
+  const toastTitle = document.getElementById("toastTitle");
+  const toastBody = document.getElementById("toastBody");
+  const toastBadge = document.getElementById("toastBadge");
+  const toastClose = document.getElementById("toastClose");
+
   const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
   // ---------- Helpers ----------
@@ -232,7 +640,44 @@
   const parseISO = (s) => { const [y,m,dd]=s.split("-").map(Number); return new Date(y,m-1,dd); };
   const wdMonFirst = (date) => (date.getDay() + 6) % 7;
   const wdName = (i) => ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][i];
-  const mkTask = (name) => ({ id: crypto.randomUUID(), name });
+  const maskHash = (h) => !h ? "not set" : (h.slice(0,6) + "…" + h.slice(-6));
+
+  function setSync(status, label){
+    syncDot.classList.toggle("ok", status==="ok");
+    syncDot.classList.toggle("bad", status==="bad");
+    syncLabel.textContent = label || status;
+  }
+
+  function showToast(title, body, badge="info"){
+    toastTitle.textContent = title;
+    toastBody.textContent = body;
+    toastBadge.textContent = badge;
+    toast.classList.add("show");
+  }
+  toastClose.addEventListener("click", ()=> toast.classList.remove("show"));
+  let toastTimer = null;
+  function quickToast(title, body, badge="info", ms=2400){
+    showToast(title, body, badge);
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toast.classList.remove("show"), ms);
+  }
+
+  // Inline confirm (no confirm())
+  let confirmAction = null;
+  function askConfirm(msg, action){
+    confirmMsg.textContent = msg;
+    confirmBar.classList.add("show");
+    confirmAction = action;
+  }
+  function clearConfirm(){
+    confirmBar.classList.remove("show");
+    confirmAction = null;
+  }
+  confirmYes.addEventListener("click", ()=>{
+    if(confirmAction) confirmAction();
+    clearConfirm();
+  });
+  confirmNo.addEventListener("click", clearConfirm);
 
   async function sha256Hex(str){
     const enc = new TextEncoder().encode(str);
@@ -240,34 +685,34 @@
     return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
   }
 
-  function setSync(status){
-    syncDot.classList.toggle("dotOk", status==="ok");
-    syncDot.classList.toggle("dotBad", status==="bad");
-  }
-  function setSyncLabel(text){ syncLabel.textContent = text; }
+  // ---------- Data model ----------
+  // We now store:
+  // templates[weekday] = { todos:[], blocks:[] }
+  // days[date]        = { todos:[], todoChecks:{}, blocks:[], locked:false, result:null }
+  const mkTodo = (name) => ({ id: crypto.randomUUID(), name });
+  const mkBlock = (title, start="09:00", durMin=90, tag="deep") =>
+    ({ id: crypto.randomUUID(), title, start, durMin, tag, notes:"" });
 
-  function maskHash(h){
-    if(!h) return "not set";
-    return h.slice(0,6) + "…" + h.slice(-6);
-  }
-
-  // ---------- Planner state ----------
   const defaultState = {
     templates: {
-      0: { tasks: [mkTask("Workout"), mkTask("Study block")] },
-      1: { tasks: [mkTask("Workout"), mkTask("Project work")] },
-      2: { tasks: [mkTask("Workout"), mkTask("90-min study")] },
-      3: { tasks: [mkTask("Workout"), mkTask("Reading 10 pages")] },
-      4: { tasks: [mkTask("Workout"), mkTask("Weekly review")] },
-      5: { tasks: [mkTask("Workout"), mkTask("Life reset")] },
-      6: { tasks: [mkTask("Walk"), mkTask("Prep week")] },
+      0: { // Monday
+        todos: [mkTodo("Workout"), mkTodo("Study block")],
+        blocks:[mkBlock("90-min Study", "09:00", 90, "deep"), mkBlock("Workout", "17:30", 60, "workout")]
+      },
+      1: { todos: [mkTodo("Workout"), mkTodo("Project work")], blocks:[mkBlock("Project Build", "10:00", 90, "focus")] },
+      2: { todos: [mkTodo("Workout"), mkTodo("90-min study")],  blocks:[mkBlock("Deep Study", "09:00", 90, "deep")] },
+      3: { todos: [mkTodo("Workout"), mkTodo("Reading 10 pages")], blocks:[mkBlock("Reading", "20:00", 30, "life")] },
+      4: { todos: [mkTodo("Workout"), mkTodo("Weekly review")], blocks:[mkBlock("Review", "18:00", 45, "admin")] },
+      5: { todos: [mkTodo("Workout"), mkTodo("Life reset")], blocks:[mkBlock("Reset + Plan", "12:00", 60, "life")] },
+      6: { todos: [mkTodo("Walk"), mkTodo("Prep week")], blocks:[mkBlock("Walk", "16:00", 45, "workout")] },
     },
     days: {}
   };
 
   let state = structuredClone(defaultState);
   let selectedDate = toISO(new Date());
-  let mode = "day";
+  let mode = "day";        // "day" | "template"
+  let view = "checklist";  // "checklist" | "schedule" | "timeline"
   let calendarMonth = new Date(); calendarMonth.setDate(1);
 
   datePick.value = selectedDate;
@@ -275,18 +720,28 @@
   function ensureDay(dateStr){
     if(!state.days[dateStr]){
       const wd = wdMonFirst(parseISO(dateStr));
-      const tpl = state.templates[wd] || { tasks: [] };
-      const day = { tasks: structuredClone(tpl.tasks||[]), checks:{}, locked:false, result:null };
-      for(const t of day.tasks) day.checks[t.id] = false;
+      const tpl = state.templates[wd] || { todos:[], blocks:[] };
+
+      const day = {
+        todos: structuredClone(tpl.todos||[]),
+        todoChecks: {},
+        blocks: structuredClone(tpl.blocks||[]),
+        locked:false,
+        result:null
+      };
+      for(const t of day.todos) day.todoChecks[t.id] = false;
       state.days[dateStr] = day;
     } else {
       const day = state.days[dateStr];
-      if(!day.checks) day.checks = {};
-      for(const t of (day.tasks||[])){
-        if(typeof day.checks[t.id] !== "boolean") day.checks[t.id] = false;
+      day.todos ||= [];
+      day.todoChecks ||= {};
+      day.blocks ||= [];
+
+      for(const t of day.todos){
+        if(typeof day.todoChecks[t.id] !== "boolean") day.todoChecks[t.id] = false;
       }
-      for(const tid of Object.keys(day.checks)){
-        if(!(day.tasks||[]).some(t => t.id === tid)) delete day.checks[tid];
+      for(const tid of Object.keys(day.todoChecks)){
+        if(!day.todos.some(t => t.id === tid)) delete day.todoChecks[tid];
       }
     }
   }
@@ -294,7 +749,7 @@
   function workingObj(){
     const wd = wdMonFirst(parseISO(selectedDate));
     if(mode === "template"){
-      if(!state.templates[wd]) state.templates[wd] = { tasks: [] };
+      if(!state.templates[wd]) state.templates[wd] = { todos:[], blocks:[] };
       return { type:"template", wd, obj: state.templates[wd] };
     }
     ensureDay(selectedDate);
@@ -304,54 +759,88 @@
   function computeAutoResult(dateStr){
     ensureDay(dateStr);
     const day = state.days[dateStr];
-    const allDone = (day.tasks||[]).every(t => !!day.checks[t.id]);
+    const allDone = (day.todos||[]).every(t => !!day.todoChecks[t.id]);
+    // You can change logic: include schedule completion later if you want.
     return allDone ? "pass" : "fail";
   }
 
-  // ---------- Render ----------
-  function render(){
-    const wd = wdMonFirst(parseISO(selectedDate));
-    const wdn = wdName(wd);
+  function minutesToEnd(start, durMin){
+    const [hh,mm] = start.split(":").map(Number);
+    const total = hh*60 + mm + Number(durMin||0);
+    const endH = Math.floor(total/60)%24;
+    const endM = total%60;
+    return `${pad2(endH)}:${pad2(endM)}`;
+  }
 
-    modeDayBtn.classList.toggle("active", mode==="day");
-    modeTplBtn.classList.toggle("active", mode==="template");
+  // ---------- Render ----------
+  function renderHeader(){
+    const wd = wdMonFirst(parseISO(selectedDate));
+    selLabel.textContent = `${selectedDate} (${wdName(wd)})`;
+  }
+
+  function render(){
+    renderHeader();
+
+    tabDay.classList.toggle("active", mode==="day");
+    tabTemplate.classList.toggle("active", mode==="template");
+
+    viewChecklist.classList.toggle("active", view==="checklist");
+    viewSchedule.classList.toggle("active", view==="schedule");
+    viewTimeline.classList.toggle("active", view==="timeline");
+
     applyTplBtn.style.display = (mode==="day") ? "inline-block" : "none";
     lockBtn.style.display = (mode==="day") ? "inline-block" : "none";
 
-    if(mode === "template"){
-      titleLeft.textContent = `Weekly Template (${wdn})`;
-      subtitleLeft.textContent = "Edit weekday defaults (no checkmarks here).";
-      progressEl.textContent = "—";
+    const wd = wdMonFirst(parseISO(selectedDate));
+    const wdn = wdName(wd);
+
+    if(mode==="template"){
+      leftTitle.textContent = `Template (${wdn})`;
+      leftSubtitle.textContent = "Edit weekday defaults for both checklist + schedule.";
     } else {
-      titleLeft.textContent = `This Day (${wdn})`;
-      subtitleLeft.textContent = "Check tasks, then lock the day for ✅/❌.";
+      leftTitle.textContent = `Day (${wdn})`;
+      leftSubtitle.textContent = "Use checklist + schedule. Lock the day for ✅/❌.";
     }
+
+    // Show add fields based on view
+    schedFields.style.display = (view==="schedule" || view==="timeline") ? "flex" : "none";
+
+    // Panes
+    viewChecklistPane.style.display = (view==="checklist") ? "flex" : "none";
+    viewSchedulePane.style.display  = (view==="schedule")  ? "flex" : "none";
+    viewTimelinePane.style.display  = (view==="timeline")  ? "block" : "none";
+
+    viewChecklistPane.innerHTML = "";
+    viewSchedulePane.innerHTML  = "";
+    viewTimelinePane.innerHTML  = "";
 
     const w = workingObj();
-    const tasks = w.obj.tasks || [];
-    taskList.innerHTML = "";
+    const isDay = (w.type === "day");
+    const locked = isDay ? !!w.obj.locked : false;
 
+    // Progress = checklist only
+    const todos = w.obj.todos || [];
     let done = 0;
-    if(w.type === "day"){
-      for(const t of tasks) if(w.obj.checks?.[t.id]) done++;
-      progressEl.textContent = `${done}/${tasks.length}`;
+    if(isDay){
+      for(const t of todos) if(w.obj.todoChecks?.[t.id]) done++;
+      progressEl.textContent = `${done}/${todos.length}`;
     } else {
-      progressEl.textContent = `${tasks.length}/${tasks.length}`;
+      progressEl.textContent = `${todos.length}/${todos.length}`;
     }
 
-    for(const t of tasks){
+    // Checklist render
+    for(const t of todos){
       const row = document.createElement("div");
-      row.className = "item";
+      row.className = "item todo";
 
       const chk = document.createElement("div");
-      const isDay = (w.type === "day");
-      const isDone = isDay ? !!w.obj.checks?.[t.id] : false;
+      const isDone = isDay ? !!w.obj.todoChecks?.[t.id] : false;
 
       chk.className = "check" + (isDone ? " done" : "");
-      chk.title = isDay ? (w.obj.locked ? "Day is locked" : "Toggle done") : "Template (no checkmarks)";
+      chk.title = isDay ? (locked ? "Day is locked" : "Toggle done") : "Template (no checkmarks)";
       chk.addEventListener("click", () => {
-        if(!isDay || w.obj.locked) return;
-        w.obj.checks[t.id] = !w.obj.checks[t.id];
+        if(!isDay || locked) return;
+        w.obj.todoChecks[t.id] = !w.obj.todoChecks[t.id];
         markDirty();
         render();
       });
@@ -368,20 +857,182 @@
       });
 
       const del = document.createElement("button");
-      del.className = "btn";
+      del.className = "btn small";
       del.textContent = "Delete";
       del.addEventListener("click", () => {
-        if(!confirm(`Delete "${t.name}"?`)) return;
-        w.obj.tasks = (w.obj.tasks||[]).filter(x => x.id !== t.id);
-        if(isDay) delete w.obj.checks?.[t.id];
-        markDirty();
-        render();
+        askConfirm(`Delete checklist item "${t.name}"?`, () => {
+          w.obj.todos = (w.obj.todos||[]).filter(x => x.id !== t.id);
+          if(isDay) delete w.obj.todoChecks?.[t.id];
+          markDirty();
+          render();
+          quickToast("Deleted", "Checklist item removed.", "ok");
+        });
       });
 
       row.appendChild(chk);
       row.appendChild(name);
       row.appendChild(del);
-      taskList.appendChild(row);
+      viewChecklistPane.appendChild(row);
+    }
+
+    // Schedule render
+    const blocks = (w.obj.blocks || []).slice().sort((a,b)=> (a.start||"").localeCompare(b.start||""));
+
+    for(const b of blocks){
+      const row = document.createElement("div");
+      row.className = "item block";
+
+      const time = document.createElement("div");
+      time.className = "timeBox";
+      const end = minutesToEnd(b.start || "09:00", b.durMin || 60);
+      time.innerHTML = `<b>${b.start || "—"}</b><span>${end}</span>`;
+
+      const body = document.createElement("div");
+      const title = document.createElement("div");
+      title.className = "name";
+      title.contentEditable = "true";
+      title.spellcheck = false;
+      title.textContent = b.title || "Untitled block";
+      title.addEventListener("blur", () => {
+        b.title = (title.textContent || "").trim() || "Untitled block";
+        markDirty();
+        render();
+      });
+
+      const meta = document.createElement("div");
+      meta.className = "mini";
+
+      const startIn = document.createElement("input");
+      startIn.type = "time";
+      startIn.value = b.start || "09:00";
+      startIn.disabled = (mode==="day" && locked);
+      startIn.addEventListener("change", ()=>{
+        b.start = startIn.value || "09:00";
+        markDirty();
+        render();
+      });
+
+      const durSel = document.createElement("select");
+      for(const v of [30,45,60,75,90,120]){
+        const opt = document.createElement("option");
+        opt.value = String(v);
+        opt.textContent = `${v}m`;
+        if(Number(b.durMin||60) === v) opt.selected = true;
+        durSel.appendChild(opt);
+      }
+      durSel.disabled = (mode==="day" && locked);
+      durSel.addEventListener("change", ()=>{
+        b.durMin = Number(durSel.value || 60);
+        markDirty();
+        render();
+      });
+
+      const tagSel = document.createElement("select");
+      for(const tag of ["deep","workout","admin","focus","life"]){
+        const opt = document.createElement("option");
+        opt.value = tag;
+        opt.textContent = tag;
+        if((b.tag||"deep") === tag) opt.selected = true;
+        tagSel.appendChild(opt);
+      }
+      tagSel.disabled = (mode==="day" && locked);
+      tagSel.addEventListener("change", ()=>{
+        b.tag = tagSel.value || "deep";
+        markDirty();
+        render();
+      });
+
+      const notes = document.createElement("textarea");
+      notes.placeholder = "Notes (optional)";
+      notes.value = b.notes || "";
+      notes.disabled = (mode==="day" && locked);
+      notes.addEventListener("blur", ()=>{
+        b.notes = (notes.value || "").trim();
+        markDirty();
+      });
+
+      meta.appendChild(startIn);
+      meta.appendChild(durSel);
+      meta.appendChild(tagSel);
+
+      body.appendChild(title);
+      body.appendChild(meta);
+      body.appendChild(notes);
+
+      const actions = document.createElement("div");
+      actions.className = "row";
+      actions.style.justifyContent = "flex-end";
+
+      const del = document.createElement("button");
+      del.className = "btn small";
+      del.textContent = "Delete";
+      del.addEventListener("click", () => {
+        askConfirm(`Delete schedule block "${b.title}"?`, () => {
+          w.obj.blocks = (w.obj.blocks||[]).filter(x => x.id !== b.id);
+          markDirty();
+          render();
+          quickToast("Deleted", "Schedule block removed.", "ok");
+        });
+      });
+
+      actions.appendChild(del);
+
+      row.appendChild(time);
+      row.appendChild(body);
+      row.appendChild(actions);
+      viewSchedulePane.appendChild(row);
+    }
+
+    // Timeline render
+    if(view==="timeline"){
+      if(blocks.length === 0){
+        viewTimelinePane.innerHTML = `<div class="muted">No schedule blocks yet. Add one to see a timeline.</div>`;
+      } else {
+        for(const b of blocks){
+          const row = document.createElement("div");
+          row.className = "tlRow";
+
+          const t = document.createElement("div");
+          t.className = "tlTime";
+          const end = minutesToEnd(b.start || "09:00", b.durMin || 60);
+          t.textContent = `${b.start || "—"}–${end}`;
+
+          const card = document.createElement("div");
+          card.className = "tlCard";
+
+          const top = document.createElement("div");
+          top.className = "top";
+
+          const title = document.createElement("div");
+          title.className = "tlTitle";
+          title.textContent = b.title || "Untitled block";
+
+          const meta = document.createElement("div");
+          meta.className = "tlMeta";
+          const tag = document.createElement("span");
+          tag.className = "tag acc";
+          tag.textContent = (b.tag || "deep");
+          const dur = document.createElement("span");
+          dur.className = "tag";
+          dur.textContent = `${b.durMin||60}m`;
+          meta.appendChild(tag);
+          meta.appendChild(dur);
+
+          top.appendChild(title);
+          top.appendChild(meta);
+
+          const notes = document.createElement("div");
+          notes.className = "muted";
+          notes.textContent = (b.notes || "").trim() ? b.notes : "—";
+
+          card.appendChild(top);
+          card.appendChild(notes);
+
+          row.appendChild(t);
+          row.appendChild(card);
+          viewTimelinePane.appendChild(row);
+        }
+      }
     }
 
     renderCalendar();
@@ -428,6 +1079,7 @@
         selectedDate = dateStr;
         datePick.value = selectedDate;
         ensureDay(selectedDate);
+        markDirty(); // since date selection is part of "state" you might want synced
         render();
       });
 
@@ -443,6 +1095,23 @@
         cell.appendChild(mark);
       }
 
+      // little dots: has schedule? has todos? any todo done?
+      const hint = document.createElement("div");
+      hint.className = "calHint";
+
+      const dot1 = document.createElement("span");
+      dot1.className = "calMiniDot" + ((day.todos||[]).length ? " on" : "");
+      const dot2 = document.createElement("span");
+      dot2.className = "calMiniDot" + ((day.blocks||[]).length ? " on" : "");
+      const anyDone = (day.todos||[]).some(t => day.todoChecks?.[t.id]);
+      const dot3 = document.createElement("span");
+      dot3.className = "calMiniDot" + (anyDone ? " done" : "");
+
+      hint.appendChild(dot1);
+      hint.appendChild(dot2);
+      hint.appendChild(dot3);
+      cell.appendChild(hint);
+
       calGrid.appendChild(cell);
     }
   }
@@ -456,20 +1125,21 @@
     renderCalendar();
   });
 
-  // ---------- Supabase Sync ----------
+  // ---------- Sync ----------
   let dirty = false;
   let saveTimer = null;
 
   function markDirty(){
     dirty = true;
-    setSync("idle"); setSyncLabel("pending…");
+    setSync("warn", "pending…");
     if(saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => pushState(false), 1000);
   }
 
   function requireKey(){
     if(!keyHash){
-      alert("Set your Planner Key first.");
+      setSync("bad", "locked");
+      quickToast("Planner Key required", "Set a key to enable sync.", "locked");
       return false;
     }
     return true;
@@ -478,7 +1148,7 @@
   async function pullState(){
     if(!requireKey()) return;
 
-    setSync("idle"); setSyncLabel("pulling…");
+    setSync("warn", "pulling…");
     const { data, error } = await supabase
       .from("shared_planner")
       .select("state")
@@ -487,8 +1157,8 @@
 
     if(error){
       console.error(error);
-      setSync("bad"); setSyncLabel("pull failed");
-      alert("Pull failed: " + (error.message || JSON.stringify(error)));
+      setSync("bad", "pull failed");
+      quickToast("Pull failed", error.message || "Unknown error", "error", 4200);
       return;
     }
 
@@ -497,14 +1167,16 @@
       if(!state?.templates || !state?.days) state = structuredClone(defaultState);
       ensureDay(selectedDate);
       dirty = false;
-      setSync("ok"); setSyncLabel("synced");
+      setSync("ok", "synced");
+      quickToast("Synced", "Pulled latest planner state.", "ok");
       render();
     } else {
-      // no row yet → push defaults
+      // No row yet → init
       state = structuredClone(defaultState);
       ensureDay(selectedDate);
       await pushState(true);
-      setSync("ok"); setSyncLabel("initialized");
+      setSync("ok", "initialized");
+      quickToast("Initialized", "Created your planner row in the cloud.", "ok");
       render();
     }
   }
@@ -512,10 +1184,13 @@
   async function pushState(force){
     if(!requireKey()) return;
 
-    if(!dirty && !force){ setSync("ok"); setSyncLabel("synced"); return; }
+    if(!dirty && !force){
+      setSync("ok","synced");
+      return;
+    }
 
     ensureDay(selectedDate);
-    setSync("idle"); setSyncLabel("saving…");
+    setSync("warn", "saving…");
 
     const { error } = await supabase
       .from("shared_planner")
@@ -527,33 +1202,37 @@
 
     if(error){
       console.error(error);
-      setSync("bad"); setSyncLabel("push failed");
-      alert("Push failed: " + (error.message || JSON.stringify(error)));
+      setSync("bad", "push failed");
+      quickToast("Push failed", error.message || "Unknown error", "error", 4200);
       return;
     }
 
     dirty = false;
-    setSync("ok"); setSyncLabel("synced");
+    setSync("ok", "synced");
   }
 
   // ---------- Key gate UI ----------
   async function refreshKeyUI(){
     keyLabel.textContent = maskHash(keyHash);
+
     if(keyHash){
       keyPane.style.display = "none";
       plannerPane.style.display = "block";
-      setSync("idle"); setSyncLabel("loading…");
+      setSync("warn","loading…");
       await pullState();
     } else {
       keyPane.style.display = "block";
       plannerPane.style.display = "none";
-      setSync("bad"); setSyncLabel("locked");
+      setSync("bad","locked");
     }
   }
 
   unlockBtn.addEventListener("click", async () => {
     const raw = (keyInput.value || "").trim();
-    if(raw.length < 8) return alert("Make the key longer (8+ chars).");
+    if(raw.length < 8){
+      quickToast("Key too short", "Use 12+ chars ideally.", "warn");
+      return;
+    }
     keyHash = await sha256Hex(raw);
     localStorage.setItem("PLANNER_KEY_HASH", keyHash);
     keyInput.value = "";
@@ -561,13 +1240,26 @@
   });
 
   clearKeyBtn.addEventListener("click", async () => {
-    if(!confirm("Clear key on this device? (Does not delete cloud data)")) return;
-    keyHash = "";
-    localStorage.removeItem("PLANNER_KEY_HASH");
-    await refreshKeyUI();
+    askConfirm("Clear key on this device? (Cloud data remains.)", async () => {
+      keyHash = "";
+      localStorage.removeItem("PLANNER_KEY_HASH");
+      await refreshKeyUI();
+      quickToast("Cleared", "Key removed from this device.", "ok");
+    });
   });
 
-  // ---------- Planner events ----------
+  pullBtn.addEventListener("click", pullState);
+  pushBtn.addEventListener("click", () => pushState(true));
+
+  // ---------- Tabs / Views ----------
+  tabDay.addEventListener("click", ()=>{ mode="day"; render(); });
+  tabTemplate.addEventListener("click", ()=>{ mode="template"; render(); });
+
+  viewChecklist.addEventListener("click", ()=>{ view="checklist"; render(); });
+  viewSchedule.addEventListener("click", ()=>{ view="schedule"; render(); });
+  viewTimeline.addEventListener("click", ()=>{ view="timeline"; render(); });
+
+  // ---------- Date ----------
   datePick.addEventListener("change", () => {
     selectedDate = datePick.value || toISO(new Date());
     ensureDay(selectedDate);
@@ -575,41 +1267,81 @@
     render();
   });
 
-  modeDayBtn.addEventListener("click", () => { mode="day"; render(); });
-  modeTplBtn.addEventListener("click", () => { mode="template"; render(); });
+  // ---------- Quick Add controls ----------
+  addBtn.addEventListener("click", ()=> {
+    addPane.style.display = "block";
+    addTitle.focus();
+  });
+  hideAddBtn.addEventListener("click", ()=> {
+    addPane.style.display = "none";
+    clearConfirm();
+  });
 
-  addTaskBtn.addEventListener("click", () => {
-    const name = prompt("Task name:", "New task");
-    if(!name) return;
+  addCommit.addEventListener("click", () => {
+    const title = (addTitle.value || "").trim();
+    if(!title){
+      quickToast("Missing title", "Type a title and try again.", "warn");
+      return;
+    }
 
     const w = workingObj();
-    const t = mkTask(name.trim());
-    w.obj.tasks = w.obj.tasks || [];
-    w.obj.tasks.push(t);
+    const isDay = (w.type==="day");
+    if(isDay && w.obj.locked){
+      quickToast("Day locked", "Unlocking is intentionally not included. Edit tomorrow or use template.", "locked");
+      return;
+    }
 
-    if(w.type==="day") w.obj.checks[t.id] = false;
-    markDirty();
-    render();
+    if(view === "checklist"){
+      const t = mkTodo(title);
+      w.obj.todos ||= [];
+      w.obj.todos.push(t);
+      if(isDay){
+        w.obj.todoChecks ||= {};
+        w.obj.todoChecks[t.id] = false;
+      }
+      addTitle.value = "";
+      markDirty();
+      render();
+      quickToast("Added", "Checklist item created.", "ok");
+    } else {
+      const start = addStart.value || "09:00";
+      const dur = Number(addDur.value || 60);
+      const tag = addTag.value || "deep";
+      const b = mkBlock(title, start, dur, tag);
+      w.obj.blocks ||= [];
+      w.obj.blocks.push(b);
+      addTitle.value = "";
+      markDirty();
+      render();
+      quickToast("Added", "Schedule block created.", "ok");
+    }
   });
 
+  // Apply template to day (inline confirm)
   applyTplBtn.addEventListener("click", () => {
     if(mode!=="day") return;
-    if(!confirm("Overwrite this date with weekday template? (resets checks + unlocks)")) return;
+    askConfirm("Overwrite this date with the weekday template? (Resets checks + unlocks)", () => {
+      const wd = wdMonFirst(parseISO(selectedDate));
+      const tpl = state.templates[wd] || { todos:[], blocks:[] };
 
-    const wd = wdMonFirst(parseISO(selectedDate));
-    const tpl = state.templates[wd] || { tasks: [] };
+      ensureDay(selectedDate);
+      const day = state.days[selectedDate];
 
-    const day = state.days[selectedDate];
-    day.tasks = structuredClone(tpl.tasks || []);
-    day.checks = {};
-    for(const t of day.tasks) day.checks[t.id] = false;
-    day.locked = false;
-    day.result = null;
+      day.todos = structuredClone(tpl.todos || []);
+      day.todoChecks = {};
+      for(const t of day.todos) day.todoChecks[t.id] = false;
 
-    markDirty();
-    render();
+      day.blocks = structuredClone(tpl.blocks || []);
+      day.locked = false;
+      day.result = null;
+
+      markDirty();
+      render();
+      quickToast("Applied", "Template copied into this day.", "ok");
+    });
   });
 
+  // Lock
   lockBtn.addEventListener("click", () => {
     if(mode!=="day") return;
     ensureDay(selectedDate);
@@ -618,10 +1350,8 @@
     day.locked = true;
     markDirty();
     render();
+    quickToast("Locked", `Day result: ${day.result === "pass" ? "PASS ✅" : "FAIL ❌"}`, day.result==="pass" ? "ok" : "warn");
   });
-
-  pullBtn.addEventListener("click", pullState);
-  pushBtn.addEventListener("click", () => pushState(true));
 
   // ---------- Boot ----------
   ensureDay(selectedDate);
