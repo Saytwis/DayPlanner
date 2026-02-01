@@ -3,17 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Planner (Supabase Sync + Calendar)</title>
+  <title>Planner (No Login Sync + Calendar)</title>
   <style>
     :root{
-      --bg:#0b0f14;
-      --text:#e8eef6;
-      --muted:#9fb0c3;
-      --line:#1d2a3a;
-      --accent:#5cc8ff;
-      --good:#39d98a;
-      --bad:#ff5c7a;
-      --warn:#ffd166;
+      --bg:#0b0f14; --text:#e8eef6; --muted:#9fb0c3; --line:#1d2a3a;
+      --good:#39d98a; --bad:#ff5c7a; --warn:#ffd166;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -40,15 +34,14 @@
     .btn:hover{border-color:rgba(92,200,255,.5)}
     .btn.primary{border-color:rgba(92,200,255,.55);background:rgba(92,200,255,.10)}
     .btn.good{border-color:rgba(57,217,138,.55);background:rgba(57,217,138,.10)}
-    .btn.bad{border-color:rgba(255,92,122,.55);background:rgba(255,92,122,.10)}
 
     input{
       border:1px solid var(--line);background:rgba(0,0,0,.2);color:var(--text);
       border-radius:12px;padding:8px 10px;font-size:13px;outline:none
     }
-
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .muted{color:var(--muted);font-size:12px}
+
     .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
     .item{
       border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.14);
@@ -72,31 +65,21 @@
     .dotBad{background:var(--bad)}
 
     /* Calendar */
-    .calDow{
-      font-size:11px;color:var(--muted);text-align:center;padding:6px 0;
-    }
+    .calDow{font-size:11px;color:var(--muted);text-align:center;padding:6px 0;}
     .calDay{
       border:1px solid var(--line);border-radius:14px;
       background:rgba(0,0,0,.14);
-      min-height:64px;
-      padding:8px;
-      cursor:pointer;
-      position:relative;
-      user-select:none;
+      min-height:64px;padding:8px;cursor:pointer;position:relative;user-select:none;
     }
     .calDay:hover{border-color:rgba(92,200,255,.35)}
-    .calDay.selected{
-      border-color: rgba(92,200,255,.65);
-      box-shadow: 0 0 0 3px rgba(92,200,255,.10);
-    }
+    .calDay.selected{border-color:rgba(92,200,255,.65);box-shadow:0 0 0 3px rgba(92,200,255,.10);}
     .calNum{
       font-size:12px;color:var(--muted);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     }
     .calMark{
-      position:absolute; right:10px; top:10px;
-      font-weight:900; font-size:16px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      position:absolute;right:10px;top:10px;font-weight:900;font-size:16px;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     }
     .calMark.good{color:var(--good)}
     .calMark.bad{color:var(--bad)}
@@ -104,45 +87,44 @@
 </head>
 <body>
 <header>
-  <h1>Planner (Synced across devices)</h1>
+  <h1>Planner (No Login, Cross-Device Sync)</h1>
   <div class="sub">
-    Uses Supabase: sign in with the same email on phone + laptop → same data.
-    <br/>Important: host this on HTTPS (GitHub Pages / Vercel). Magic links are unreliable from <b>file://</b>.
+    Enter the same <b>Planner Key</b> on phone + laptop to sync. Use a strong key (like a password).
   </div>
 </header>
 
 <div class="wrap">
-  <!-- LEFT: Auth + Planner -->
+  <!-- LEFT -->
   <section class="card">
     <div class="bar">
       <div class="row">
-        <span class="pill">Sync: <span id="syncDot" class="statusDot"></span> <b id="syncLabel">disconnected</b></span>
-        <span class="pill">User: <b id="userLabel">signed out</b></span>
+        <span class="pill">Sync: <span id="syncDot" class="statusDot"></span> <b id="syncLabel">locked</b></span>
+        <span class="pill">Key: <b id="keyLabel">not set</b></span>
       </div>
       <div class="row">
         <button class="btn" id="pullBtn">Pull</button>
         <button class="btn" id="pushBtn">Push</button>
-        <button class="btn" id="signOutBtn">Sign out</button>
+        <button class="btn" id="clearKeyBtn">Clear key</button>
       </div>
     </div>
 
-    <!-- Auth pane -->
-    <div class="content" id="authPane">
+    <!-- Key gate -->
+    <div class="content" id="keyPane">
       <div class="row">
-        <input id="emailInput" type="email" placeholder="you@email.com" style="min-width:260px"/>
-        <button class="btn primary" id="signInBtn">Send magic link</button>
+        <input id="keyInput" type="password" placeholder="Planner Key (12+ chars recommended)" style="min-width:320px"/>
+        <button class="btn primary" id="unlockBtn">Unlock</button>
       </div>
       <div class="muted" style="margin-top:8px;line-height:1.35">
-        If clicking does “nothing”, open DevTools Console and you should now see an alert with the exact error.
+        Your key is stored on this device only (localStorage). Don’t forget it.
       </div>
     </div>
 
-    <!-- Planner pane -->
+    <!-- Planner -->
     <div class="content" id="plannerPane" style="display:none">
       <div class="bar" style="border:1px solid var(--line);border-radius:14px;margin-bottom:12px">
         <div class="row">
           <span class="pill">Date: <b><input id="datePick" type="date"/></b></span>
-          <span class="seg" title="Template = edit weekday defaults. This Day = check & lock a specific date.">
+          <span class="seg">
             <button id="modeDayBtn" class="active">This Day</button>
             <button id="modeTplBtn">Template</button>
           </span>
@@ -165,12 +147,12 @@
       <div class="list" id="taskList"></div>
 
       <div class="muted" style="margin-top:10px;line-height:1.35">
-        Autosaves to Supabase ~1s after you stop editing. Use <b>Push</b> / <b>Pull</b> anytime.
+        Autosaves to Supabase ~1s after you stop editing.
       </div>
     </div>
   </section>
 
-  <!-- RIGHT: Calendar -->
+  <!-- RIGHT Calendar -->
   <aside class="card">
     <div class="bar">
       <div class="row" style="justify-content:space-between; width:100%">
@@ -185,7 +167,7 @@
       <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;"></div>
 
       <div class="muted" style="margin-top:10px;line-height:1.35">
-        ✅ / ❌ shows only after you lock a day. Tap a date to open it.
+        ✅ / ❌ appears after you lock that date.
       </div>
     </div>
   </aside>
@@ -198,19 +180,30 @@
   const SUPABASE_URL = "https://lugcbtddrzpkfrlpawuq.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1Z2NidGRkcnpwa2ZybHBhd3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NjQxNzAsImV4cCI6MjA4NTU0MDE3MH0.H3lp8QSMWQsUbCEEK-U4SZKM7oAv8tXUTq99AK7QQK0";
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // We'll attach x-planner-key-hash header on every request
+  let keyHash = localStorage.getItem("PLANNER_KEY_HASH") || "";
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: {
+      fetch: (url, options = {}) => {
+        const headers = new Headers(options.headers || {});
+        if (keyHash) headers.set("x-planner-key-hash", keyHash);
+        return fetch(url, { ...options, headers });
+      }
+    }
+  });
 
   // ---------- DOM ----------
   const syncDot = document.getElementById("syncDot");
   const syncLabel = document.getElementById("syncLabel");
-  const userLabel = document.getElementById("userLabel");
+  const keyLabel = document.getElementById("keyLabel");
 
-  const authPane = document.getElementById("authPane");
+  const keyPane = document.getElementById("keyPane");
   const plannerPane = document.getElementById("plannerPane");
+  const keyInput = document.getElementById("keyInput");
+  const unlockBtn = document.getElementById("unlockBtn");
+  const clearKeyBtn = document.getElementById("clearKeyBtn");
 
-  const emailInput = document.getElementById("emailInput");
-  const signInBtn = document.getElementById("signInBtn");
-  const signOutBtn = document.getElementById("signOutBtn");
   const pullBtn = document.getElementById("pullBtn");
   const pushBtn = document.getElementById("pushBtn");
 
@@ -226,7 +219,6 @@
   const progressEl = document.getElementById("progress");
   const taskList = document.getElementById("taskList");
 
-  // Calendar DOM
   const calTitle = document.getElementById("calTitle");
   const calGrid  = document.getElementById("calGrid");
   const calDow   = document.getElementById("calDow");
@@ -238,16 +230,26 @@
   const pad2 = (n) => String(n).padStart(2,"0");
   const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
   const parseISO = (s) => { const [y,m,dd]=s.split("-").map(Number); return new Date(y,m-1,dd); };
-  const wdMonFirst = (date) => (date.getDay() + 6) % 7; // Mon=0..Sun=6
+  const wdMonFirst = (date) => (date.getDay() + 6) % 7;
   const wdName = (i) => ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][i];
   const mkTask = (name) => ({ id: crypto.randomUUID(), name });
 
-  // ---------- Sync UI ----------
+  async function sha256Hex(str){
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest("SHA-256", enc);
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+  }
+
   function setSync(status){
     syncDot.classList.toggle("dotOk", status==="ok");
     syncDot.classList.toggle("dotBad", status==="bad");
   }
   function setSyncLabel(text){ syncLabel.textContent = text; }
+
+  function maskHash(h){
+    if(!h) return "not set";
+    return h.slice(0,6) + "…" + h.slice(-6);
+  }
 
   // ---------- Planner state ----------
   const defaultState = {
@@ -260,14 +262,12 @@
       5: { tasks: [mkTask("Workout"), mkTask("Life reset")] },
       6: { tasks: [mkTask("Walk"), mkTask("Prep week")] },
     },
-    days: {
-      // "YYYY-MM-DD": { tasks:[{id,name}], checks:{id:bool}, locked:false, result:"pass"|"fail"|null }
-    }
+    days: {}
   };
 
   let state = structuredClone(defaultState);
   let selectedDate = toISO(new Date());
-  let mode = "day"; // "day" | "template"
+  let mode = "day";
   let calendarMonth = new Date(); calendarMonth.setDate(1);
 
   datePick.value = selectedDate;
@@ -320,7 +320,7 @@
 
     if(mode === "template"){
       titleLeft.textContent = `Weekly Template (${wdn})`;
-      subtitleLeft.textContent = "Edit this weekday’s default tasks (no checkmarks here).";
+      subtitleLeft.textContent = "Edit weekday defaults (no checkmarks here).";
       progressEl.textContent = "—";
     } else {
       titleLeft.textContent = `This Day (${wdn})`;
@@ -329,7 +329,6 @@
 
     const w = workingObj();
     const tasks = w.obj.tasks || [];
-
     taskList.innerHTML = "";
 
     let done = 0;
@@ -351,8 +350,7 @@
       chk.className = "check" + (isDone ? " done" : "");
       chk.title = isDay ? (w.obj.locked ? "Day is locked" : "Toggle done") : "Template (no checkmarks)";
       chk.addEventListener("click", () => {
-        if(!isDay) return;
-        if(w.obj.locked) return;
+        if(!isDay || w.obj.locked) return;
         w.obj.checks[t.id] = !w.obj.checks[t.id];
         markDirty();
         render();
@@ -383,7 +381,6 @@
       row.appendChild(chk);
       row.appendChild(name);
       row.appendChild(del);
-
       taskList.appendChild(row);
     }
 
@@ -392,8 +389,7 @@
 
   // ---------- Calendar ----------
   function renderCalendar(){
-    // DOW header once
-    if(calDow && calDow.childElementCount === 0){
+    if(calDow.childElementCount === 0){
       for(const d of DOW){
         const el = document.createElement("div");
         el.className = "calDow";
@@ -408,7 +404,7 @@
     calTitle.textContent = `${monthName} ${y}`;
 
     const first = new Date(y, m, 1);
-    const firstDay = (first.getDay() + 6) % 7; // Monday first
+    const firstDay = (first.getDay() + 6) % 7;
     const daysInMonth = new Date(y, m+1, 0).getDate();
 
     calGrid.innerHTML = "";
@@ -460,43 +456,34 @@
     renderCalendar();
   });
 
-  // ---------- Supabase Sync Layer ----------
+  // ---------- Supabase Sync ----------
   let dirty = false;
   let saveTimer = null;
 
   function markDirty(){
     dirty = true;
-    setSync("idle");
-    setSyncLabel("pending…");
+    setSync("idle"); setSyncLabel("pending…");
     if(saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => pushState(false), 1000); // debounce autosave
+    saveTimer = setTimeout(() => pushState(false), 1000);
   }
 
-  async function getUser(){
-    const { data } = await supabase.auth.getSession();
-    return data?.session?.user ?? null;
+  function requireKey(){
+    if(!keyHash){
+      alert("Set your Planner Key first.");
+      return false;
+    }
+    return true;
   }
 
   async function pullState(){
-    const user = await getUser();
-    if(!user) return;
+    if(!requireKey()) return;
 
     setSync("idle"); setSyncLabel("pulling…");
     const { data, error } = await supabase
-      .from("planner_states")
-      .select("state, updated_at")
-      .eq("user_id", user.id)
-      .single();
-
-    // No row yet → create it
-    if(error && error.code === "PGRST116"){
-      state = structuredClone(defaultState);
-      ensureDay(selectedDate);
-      await pushState(true);
-      setSync("ok"); setSyncLabel("initialized");
-      render();
-      return;
-    }
+      .from("shared_planner")
+      .select("state")
+      .eq("key_hash", keyHash)
+      .maybeSingle();
 
     if(error){
       console.error(error);
@@ -510,39 +497,33 @@
       if(!state?.templates || !state?.days) state = structuredClone(defaultState);
       ensureDay(selectedDate);
       dirty = false;
-      setSync("ok"); setSyncLabel("pulled");
+      setSync("ok"); setSyncLabel("synced");
       render();
     } else {
-      // Edge: row exists but state empty
+      // no row yet → push defaults
       state = structuredClone(defaultState);
       ensureDay(selectedDate);
       await pushState(true);
-      setSync("ok"); setSyncLabel("repaired");
+      setSync("ok"); setSyncLabel("initialized");
       render();
     }
   }
 
   async function pushState(force){
-    const user = await getUser();
-    if(!user) return;
+    if(!requireKey()) return;
 
-    if(!dirty && !force){
-      setSync("ok"); setSyncLabel("synced");
-      return;
-    }
+    if(!dirty && !force){ setSync("ok"); setSyncLabel("synced"); return; }
 
     ensureDay(selectedDate);
-
     setSync("idle"); setSyncLabel("saving…");
-    const payload = {
-      user_id: user.id,
-      state: state,
-      updated_at: new Date().toISOString(),
-    };
 
     const { error } = await supabase
-      .from("planner_states")
-      .upsert(payload, { onConflict: "user_id" });
+      .from("shared_planner")
+      .upsert({
+        key_hash: keyHash,
+        state: state,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "key_hash" });
 
     if(error){
       console.error(error);
@@ -555,72 +536,41 @@
     setSync("ok"); setSyncLabel("synced");
   }
 
-  // ---------- Auth UI ----------
-  async function refreshAuthUI(){
-    const user = await getUser();
-    if(user){
-      userLabel.textContent = user.email || user.id;
-      authPane.style.display = "none";
+  // ---------- Key gate UI ----------
+  async function refreshKeyUI(){
+    keyLabel.textContent = maskHash(keyHash);
+    if(keyHash){
+      keyPane.style.display = "none";
       plannerPane.style.display = "block";
       setSync("idle"); setSyncLabel("loading…");
       await pullState();
     } else {
-      userLabel.textContent = "signed out";
-      authPane.style.display = "block";
+      keyPane.style.display = "block";
       plannerPane.style.display = "none";
-      setSync("bad"); setSyncLabel("disconnected");
+      setSync("bad"); setSyncLabel("locked");
     }
   }
 
-  // Magic link button (with hard alerts so it never “does nothing”)
-  signInBtn.addEventListener("click", async () => {
-    try{
-      const email = (emailInput.value || "").trim();
-      if(!email) return alert("Enter an email.");
-
-      if(SUPABASE_URL.includes("PASTE_") || SUPABASE_ANON_KEY.includes("PASTE_")){
-        return alert("You didn’t paste your SUPABASE_URL / SUPABASE_ANON_KEY yet.");
-      }
-
-      setSync("idle"); setSyncLabel("sending link…");
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          // Must be an allowed Redirect URL in Supabase Auth settings
-          emailRedirectTo: window.location.href
-        }
-      });
-
-      if(error){
-        console.error(error);
-        setSync("bad"); setSyncLabel("send failed");
-        return alert("Send failed: " + error.message);
-      }
-
-      console.log("OTP request ok:", data);
-      setSync("ok"); setSyncLabel("link sent");
-      alert("Magic link sent. Check inbox + spam. Open the link on THIS device to finish login.");
-    }catch(e){
-      console.error(e);
-      setSync("bad"); setSyncLabel("error");
-      alert("Unexpected error: " + (e?.message || e));
-    }
+  unlockBtn.addEventListener("click", async () => {
+    const raw = (keyInput.value || "").trim();
+    if(raw.length < 8) return alert("Make the key longer (8+ chars).");
+    keyHash = await sha256Hex(raw);
+    localStorage.setItem("PLANNER_KEY_HASH", keyHash);
+    keyInput.value = "";
+    await refreshKeyUI();
   });
 
-  signOutBtn.addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    await refreshAuthUI();
-  });
-
-  supabase.auth.onAuthStateChange(async () => {
-    await refreshAuthUI();
+  clearKeyBtn.addEventListener("click", async () => {
+    if(!confirm("Clear key on this device? (Does not delete cloud data)")) return;
+    keyHash = "";
+    localStorage.removeItem("PLANNER_KEY_HASH");
+    await refreshKeyUI();
   });
 
   // ---------- Planner events ----------
   datePick.addEventListener("change", () => {
     selectedDate = datePick.value || toISO(new Date());
     ensureDay(selectedDate);
-    // Creating a day is a real state change (so it should save)
     markDirty();
     render();
   });
@@ -637,9 +587,7 @@
     w.obj.tasks = w.obj.tasks || [];
     w.obj.tasks.push(t);
 
-    if(w.type==="day"){
-      w.obj.checks[t.id] = false;
-    }
+    if(w.type==="day") w.obj.checks[t.id] = false;
     markDirty();
     render();
   });
@@ -678,7 +626,7 @@
   // ---------- Boot ----------
   ensureDay(selectedDate);
   render();
-  await refreshAuthUI();
+  await refreshKeyUI();
 </script>
 </body>
 </html>
