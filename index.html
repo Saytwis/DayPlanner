@@ -3,52 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Planner (Synced)</title>
+  <title>Planner (Supabase Sync + Calendar)</title>
   <style>
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b0f14;color:#e8eef6}
+    :root{
+      --bg:#0b0f14;
+      --text:#e8eef6;
+      --muted:#9fb0c3;
+      --line:#1d2a3a;
+      --accent:#5cc8ff;
+      --good:#39d98a;
+      --bad:#ff5c7a;
+      --warn:#ffd166;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
     header{max-width:980px;margin:0 auto;padding:18px 16px 8px}
     h1{margin:0 0 6px;font-size:18px}
-    .sub{color:#9fb0c3;font-size:13px;line-height:1.35}
+    .sub{color:var(--muted);font-size:13px;line-height:1.35}
     .wrap{max-width:980px;margin:0 auto;padding:12px 16px 28px;display:grid;gap:12px;grid-template-columns:1.2fr .8fr}
     @media(max-width:900px){.wrap{grid-template-columns:1fr}}
-    .card{border:1px solid #1d2a3a;border-radius:14px;background:rgba(255,255,255,.03);overflow:hidden}
-    .bar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #1d2a3a;background:rgba(0,0,0,.15);flex-wrap:wrap}
-    .pill{border:1px solid #1d2a3a;border-radius:999px;padding:6px 10px;font-size:12px;color:#9fb0c3;background:rgba(0,0,0,.18);display:flex;gap:8px;align-items:center}
-    .pill b{color:#e8eef6}
-    .btn{border:1px solid #1d2a3a;background:rgba(0,0,0,.18);color:#e8eef6;border-radius:12px;padding:8px 10px;font-size:13px;cursor:pointer}
+
+    .card{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);overflow:hidden}
+    .bar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.15);flex-wrap:wrap}
+    .content{padding:12px}
+
+    .pill{
+      border:1px solid var(--line);border-radius:999px;padding:6px 10px;
+      font-size:12px;color:var(--muted);background:rgba(0,0,0,.18);
+      display:flex;gap:8px;align-items:center;white-space:nowrap
+    }
+    .pill b{color:var(--text)}
+    .btn{
+      border:1px solid var(--line);background:rgba(0,0,0,.18);color:var(--text);
+      border-radius:12px;padding:8px 10px;font-size:13px;cursor:pointer
+    }
     .btn:hover{border-color:rgba(92,200,255,.5)}
     .btn.primary{border-color:rgba(92,200,255,.55);background:rgba(92,200,255,.10)}
     .btn.good{border-color:rgba(57,217,138,.55);background:rgba(57,217,138,.10)}
     .btn.bad{border-color:rgba(255,92,122,.55);background:rgba(255,92,122,.10)}
-    input{border:1px solid #1d2a3a;background:rgba(0,0,0,.2);color:#e8eef6;border-radius:12px;padding:8px 10px;font-size:13px;outline:none}
-    .content{padding:12px}
-    .muted{color:#9fb0c3;font-size:12px}
+
+    input{
+      border:1px solid var(--line);background:rgba(0,0,0,.2);color:var(--text);
+      border-radius:12px;padding:8px 10px;font-size:13px;outline:none
+    }
+
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .muted{color:var(--muted);font-size:12px}
     .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-    .item{border:1px solid #1d2a3a;border-radius:14px;background:rgba(0,0,0,.14);padding:10px;display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center}
-    .check{width:18px;height:18px;border-radius:6px;border:1px solid #1d2a3a;cursor:pointer;display:grid;place-items:center}
+    .item{
+      border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.14);
+      padding:10px;display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center
+    }
+    .check{
+      width:18px;height:18px;border-radius:6px;border:1px solid var(--line);
+      cursor:pointer;display:grid;place-items:center;user-select:none
+    }
     .check.done{border-color:rgba(57,217,138,.6);background:rgba(57,217,138,.12)}
-    .check.done::after{content:"✓";color:#39d98a;font-weight:800;font-size:12px}
+    .check.done::after{content:"✓";color:var(--good);font-weight:900;font-size:12px}
     .name{outline:none;border-radius:10px;padding:2px 6px}
     .name:focus{box-shadow:0 0 0 3px rgba(92,200,255,.12);background:rgba(92,200,255,.06)}
-    .seg{display:inline-flex;border:1px solid #1d2a3a;border-radius:999px;overflow:hidden;background:rgba(0,0,0,.18)}
-    .seg button{border:0;background:transparent;color:#9fb0c3;padding:8px 10px;cursor:pointer;font-size:12px}
-    .seg button.active{color:#e8eef6;background:rgba(92,200,255,.10)}
-    .statusDot{width:8px;height:8px;border-radius:50%;background:#ffd166;display:inline-block}
-    .dotOk{background:#39d98a}
-    .dotBad{background:#ff5c7a}
+
+    .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:rgba(0,0,0,.18)}
+    .seg button{border:0;background:transparent;color:var(--muted);padding:8px 10px;cursor:pointer;font-size:12px}
+    .seg button.active{color:var(--text);background:rgba(92,200,255,.10)}
+
+    .statusDot{width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block}
+    .dotOk{background:var(--good)}
+    .dotBad{background:var(--bad)}
+
+    /* Calendar */
+    .calDow{
+      font-size:11px;color:var(--muted);text-align:center;padding:6px 0;
+    }
+    .calDay{
+      border:1px solid var(--line);border-radius:14px;
+      background:rgba(0,0,0,.14);
+      min-height:64px;
+      padding:8px;
+      cursor:pointer;
+      position:relative;
+      user-select:none;
+    }
+    .calDay:hover{border-color:rgba(92,200,255,.35)}
+    .calDay.selected{
+      border-color: rgba(92,200,255,.65);
+      box-shadow: 0 0 0 3px rgba(92,200,255,.10);
+    }
+    .calNum{
+      font-size:12px;color:var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+    .calMark{
+      position:absolute; right:10px; top:10px;
+      font-weight:900; font-size:16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+    .calMark.good{color:var(--good)}
+    .calMark.bad{color:var(--bad)}
   </style>
 </head>
 <body>
 <header>
   <h1>Planner (Synced across devices)</h1>
   <div class="sub">
-    Sign in with the same email on phone + laptop → your data is the same.
-    <br/>If you’re using GitHub Pages, set Supabase Auth Redirect URLs to your Pages URL.
+    Uses Supabase: sign in with the same email on phone + laptop → same data.
+    <br/>Important: host this on HTTPS (GitHub Pages / Vercel). Magic links are unreliable from <b>file://</b>.
   </div>
 </header>
 
 <div class="wrap">
+  <!-- LEFT: Auth + Planner -->
   <section class="card">
     <div class="bar">
       <div class="row">
@@ -62,21 +126,23 @@
       </div>
     </div>
 
+    <!-- Auth pane -->
     <div class="content" id="authPane">
       <div class="row">
         <input id="emailInput" type="email" placeholder="you@email.com" style="min-width:260px"/>
         <button class="btn primary" id="signInBtn">Send magic link</button>
       </div>
-      <div class="muted" style="margin-top:8px">
-        You’ll get an email. Open the link on this device to finish login.
+      <div class="muted" style="margin-top:8px;line-height:1.35">
+        If clicking does “nothing”, open DevTools Console and you should now see an alert with the exact error.
       </div>
     </div>
 
+    <!-- Planner pane -->
     <div class="content" id="plannerPane" style="display:none">
-      <div class="bar" style="border:1px solid #1d2a3a;border-radius:14px;margin-bottom:12px">
+      <div class="bar" style="border:1px solid var(--line);border-radius:14px;margin-bottom:12px">
         <div class="row">
           <span class="pill">Date: <b><input id="datePick" type="date"/></b></span>
-          <span class="seg">
+          <span class="seg" title="Template = edit weekday defaults. This Day = check & lock a specific date.">
             <button id="modeDayBtn" class="active">This Day</button>
             <button id="modeTplBtn">Template</button>
           </span>
@@ -84,7 +150,7 @@
         <div class="row">
           <button class="btn primary" id="addTaskBtn">+ Add task</button>
           <button class="btn" id="applyTplBtn">Apply template → day</button>
-          <button class="btn" id="lockBtn">Lock (auto ✅/❌)</button>
+          <button class="btn good" id="lockBtn">Lock (auto ✅/❌)</button>
         </div>
       </div>
 
@@ -98,36 +164,43 @@
 
       <div class="list" id="taskList"></div>
 
-      <div class="muted" style="margin-top:10px">
-        Autosaves to Supabase ~1s after you stop editing.
+      <div class="muted" style="margin-top:10px;line-height:1.35">
+        Autosaves to Supabase ~1s after you stop editing. Use <b>Push</b> / <b>Pull</b> anytime.
       </div>
     </div>
   </section>
 
+  <!-- RIGHT: Calendar -->
   <aside class="card">
     <div class="bar">
-      <div class="pill">Debug</div>
-      <div class="muted">Last write wins (updated_at)</div>
+      <div class="row" style="justify-content:space-between; width:100%">
+        <button class="btn" id="prevMonthBtn">←</button>
+        <div class="pill"><b id="calTitle">Month YYYY</b></div>
+        <button class="btn" id="nextMonthBtn">→</button>
+      </div>
     </div>
+
     <div class="content">
-      <div class="muted" style="margin-bottom:8px">If something looks off, hit <b>Pull</b> to reload from cloud.</div>
-      <pre id="debug" style="white-space:pre-wrap;word-break:break-word;font-size:12px;color:#9fb0c3;margin:0"></pre>
+      <div id="calDow" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px;"></div>
+      <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;"></div>
+
+      <div class="muted" style="margin-top:10px;line-height:1.35">
+        ✅ / ❌ shows only after you lock a day. Tap a date to open it.
+      </div>
     </div>
   </aside>
 </div>
 
 <script type="module">
-  // Supabase in browser via ESM CDN (no build step)
-  // (Supabase docs mainly show npm import; CDN ESM works fine for static sites.)
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // ✅ TODO: paste yours here (Supabase Project Settings → API)
+  // ✅ Paste your Supabase Settings → API values here
   const SUPABASE_URL = "https://lugcbtddrzpkfrlpawuq.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1Z2NidGRkcnpwa2ZybHBhd3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NjQxNzAsImV4cCI6MjA4NTU0MDE3MH0.H3lp8QSMWQsUbCEEK-U4SZKM7oAv8tXUTq99AK7QQK0";
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ---------- UI refs ----------
+  // ---------- DOM ----------
   const syncDot = document.getElementById("syncDot");
   const syncLabel = document.getElementById("syncLabel");
   const userLabel = document.getElementById("userLabel");
@@ -153,17 +226,30 @@
   const progressEl = document.getElementById("progress");
   const taskList = document.getElementById("taskList");
 
-  const debug = document.getElementById("debug");
+  // Calendar DOM
+  const calTitle = document.getElementById("calTitle");
+  const calGrid  = document.getElementById("calGrid");
+  const calDow   = document.getElementById("calDow");
+  const prevMonthBtn = document.getElementById("prevMonthBtn");
+  const nextMonthBtn = document.getElementById("nextMonthBtn");
+  const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
-  // ---------- Planner state (weekly template + days) ----------
+  // ---------- Helpers ----------
   const pad2 = (n) => String(n).padStart(2,"0");
   const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
   const parseISO = (s) => { const [y,m,dd]=s.split("-").map(Number); return new Date(y,m-1,dd); };
   const wdMonFirst = (date) => (date.getDay() + 6) % 7; // Mon=0..Sun=6
   const wdName = (i) => ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][i];
-
   const mkTask = (name) => ({ id: crypto.randomUUID(), name });
 
+  // ---------- Sync UI ----------
+  function setSync(status){
+    syncDot.classList.toggle("dotOk", status==="ok");
+    syncDot.classList.toggle("dotBad", status==="bad");
+  }
+  function setSyncLabel(text){ syncLabel.textContent = text; }
+
+  // ---------- Planner state ----------
   const defaultState = {
     templates: {
       0: { tasks: [mkTask("Workout"), mkTask("Study block")] },
@@ -175,13 +261,14 @@
       6: { tasks: [mkTask("Walk"), mkTask("Prep week")] },
     },
     days: {
-      // "YYYY-MM-DD": { tasks:[{id,name}], checks:{id:bool}, locked:false, result:null }
+      // "YYYY-MM-DD": { tasks:[{id,name}], checks:{id:bool}, locked:false, result:"pass"|"fail"|null }
     }
   };
 
   let state = structuredClone(defaultState);
   let selectedDate = toISO(new Date());
   let mode = "day"; // "day" | "template"
+  let calendarMonth = new Date(); calendarMonth.setDate(1);
 
   datePick.value = selectedDate;
 
@@ -233,19 +320,21 @@
 
     if(mode === "template"){
       titleLeft.textContent = `Weekly Template (${wdn})`;
-      subtitleLeft.textContent = "Edit this weekday’s default tasks.";
+      subtitleLeft.textContent = "Edit this weekday’s default tasks (no checkmarks here).";
+      progressEl.textContent = "—";
     } else {
       titleLeft.textContent = `This Day (${wdn})`;
       subtitleLeft.textContent = "Check tasks, then lock the day for ✅/❌.";
     }
 
-    const { type, obj } = workingObj();
-    const tasks = obj.tasks || [];
+    const w = workingObj();
+    const tasks = w.obj.tasks || [];
+
     taskList.innerHTML = "";
 
     let done = 0;
-    if(type === "day"){
-      for(const t of tasks) if(obj.checks?.[t.id]) done++;
+    if(w.type === "day"){
+      for(const t of tasks) if(w.obj.checks?.[t.id]) done++;
       progressEl.textContent = `${done}/${tasks.length}`;
     } else {
       progressEl.textContent = `${tasks.length}/${tasks.length}`;
@@ -256,14 +345,15 @@
       row.className = "item";
 
       const chk = document.createElement("div");
-      const isDay = (type === "day");
-      const isDone = isDay ? !!obj.checks?.[t.id] : false;
+      const isDay = (w.type === "day");
+      const isDone = isDay ? !!w.obj.checks?.[t.id] : false;
+
       chk.className = "check" + (isDone ? " done" : "");
-      chk.title = isDay ? (obj.locked ? "Day is locked" : "Toggle done") : "Template (no checkmarks)";
+      chk.title = isDay ? (w.obj.locked ? "Day is locked" : "Toggle done") : "Template (no checkmarks)";
       chk.addEventListener("click", () => {
         if(!isDay) return;
-        if(obj.locked) return;
-        obj.checks[t.id] = !obj.checks[t.id];
+        if(w.obj.locked) return;
+        w.obj.checks[t.id] = !w.obj.checks[t.id];
         markDirty();
         render();
       });
@@ -284,8 +374,8 @@
       del.textContent = "Delete";
       del.addEventListener("click", () => {
         if(!confirm(`Delete "${t.name}"?`)) return;
-        obj.tasks = (obj.tasks||[]).filter(x => x.id !== t.id);
-        if(isDay) delete obj.checks?.[t.id];
+        w.obj.tasks = (w.obj.tasks||[]).filter(x => x.id !== t.id);
+        if(isDay) delete w.obj.checks?.[t.id];
         markDirty();
         render();
       });
@@ -293,32 +383,93 @@
       row.appendChild(chk);
       row.appendChild(name);
       row.appendChild(del);
+
       taskList.appendChild(row);
     }
 
-    debug.textContent = JSON.stringify({ selectedDate, mode, state }, null, 2);
+    renderCalendar();
   }
+
+  // ---------- Calendar ----------
+  function renderCalendar(){
+    // DOW header once
+    if(calDow && calDow.childElementCount === 0){
+      for(const d of DOW){
+        const el = document.createElement("div");
+        el.className = "calDow";
+        el.textContent = d;
+        calDow.appendChild(el);
+      }
+    }
+
+    const y = calendarMonth.getFullYear();
+    const m = calendarMonth.getMonth();
+    const monthName = calendarMonth.toLocaleString(undefined, { month:"long" });
+    calTitle.textContent = `${monthName} ${y}`;
+
+    const first = new Date(y, m, 1);
+    const firstDay = (first.getDay() + 6) % 7; // Monday first
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+
+    calGrid.innerHTML = "";
+
+    for(let i=0;i<firstDay;i++){
+      const blank = document.createElement("div");
+      blank.style.opacity = 0;
+      blank.style.pointerEvents = "none";
+      blank.className = "calDay";
+      calGrid.appendChild(blank);
+    }
+
+    for(let d=1; d<=daysInMonth; d++){
+      const dateStr = `${y}-${pad2(m+1)}-${pad2(d)}`;
+      ensureDay(dateStr);
+      const day = state.days[dateStr];
+
+      const cell = document.createElement("div");
+      cell.className = "calDay" + (dateStr === selectedDate ? " selected" : "");
+      cell.addEventListener("click", () => {
+        selectedDate = dateStr;
+        datePick.value = selectedDate;
+        ensureDay(selectedDate);
+        render();
+      });
+
+      const num = document.createElement("div");
+      num.className = "calNum";
+      num.textContent = d;
+      cell.appendChild(num);
+
+      if(day.locked && day.result){
+        const mark = document.createElement("div");
+        mark.className = "calMark " + (day.result === "pass" ? "good" : "bad");
+        mark.textContent = (day.result === "pass") ? "✓" : "✗";
+        cell.appendChild(mark);
+      }
+
+      calGrid.appendChild(cell);
+    }
+  }
+
+  prevMonthBtn.addEventListener("click", () => {
+    calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth()-1, 1);
+    renderCalendar();
+  });
+  nextMonthBtn.addEventListener("click", () => {
+    calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth()+1, 1);
+    renderCalendar();
+  });
 
   // ---------- Supabase Sync Layer ----------
   let dirty = false;
   let saveTimer = null;
-
-  function setSync(status){
-    // status: "ok" | "bad" | "idle"
-    syncDot.classList.toggle("dotOk", status==="ok");
-    syncDot.classList.toggle("dotBad", status==="bad");
-  }
-
-  function setSyncLabel(text){
-    syncLabel.textContent = text;
-  }
 
   function markDirty(){
     dirty = true;
     setSync("idle");
     setSyncLabel("pending…");
     if(saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => pushState(), 1000); // debounce
+    saveTimer = setTimeout(() => pushState(false), 1000); // debounce autosave
   }
 
   async function getUser(){
@@ -330,39 +481,59 @@
     const user = await getUser();
     if(!user) return;
 
+    setSync("idle"); setSyncLabel("pulling…");
     const { data, error } = await supabase
       .from("planner_states")
       .select("state, updated_at")
       .eq("user_id", user.id)
       .single();
 
-    if(error && error.code !== "PGRST116"){ // no row yet
+    // No row yet → create it
+    if(error && error.code === "PGRST116"){
+      state = structuredClone(defaultState);
+      ensureDay(selectedDate);
+      await pushState(true);
+      setSync("ok"); setSyncLabel("initialized");
+      render();
+      return;
+    }
+
+    if(error){
       console.error(error);
       setSync("bad"); setSyncLabel("pull failed");
+      alert("Pull failed: " + (error.message || JSON.stringify(error)));
       return;
     }
 
     if(data?.state){
       state = data.state;
-      // Basic guard if table has old/empty
       if(!state?.templates || !state?.days) state = structuredClone(defaultState);
       ensureDay(selectedDate);
+      dirty = false;
       setSync("ok"); setSyncLabel("pulled");
       render();
     } else {
-      // No row yet — push defaults
+      // Edge: row exists but state empty
+      state = structuredClone(defaultState);
+      ensureDay(selectedDate);
       await pushState(true);
+      setSync("ok"); setSyncLabel("repaired");
+      render();
     }
   }
 
-  async function pushState(force=false){
+  async function pushState(force){
     const user = await getUser();
     if(!user) return;
-    if(!dirty && !force) { setSync("ok"); setSyncLabel("synced"); return; }
 
-    // Ensure selected day exists before saving
+    if(!dirty && !force){
+      setSync("ok"); setSyncLabel("synced");
+      return;
+    }
+
     ensureDay(selectedDate);
 
+    setSync("idle"); setSyncLabel("saving…");
     const payload = {
       user_id: user.id,
       state: state,
@@ -376,6 +547,7 @@
     if(error){
       console.error(error);
       setSync("bad"); setSyncLabel("push failed");
+      alert("Push failed: " + (error.message || JSON.stringify(error)));
       return;
     }
 
@@ -383,7 +555,7 @@
     setSync("ok"); setSyncLabel("synced");
   }
 
-  // ---------- Auth ----------
+  // ---------- Auth UI ----------
   async function refreshAuthUI(){
     const user = await getUser();
     if(user){
@@ -400,15 +572,39 @@
     }
   }
 
+  // Magic link button (with hard alerts so it never “does nothing”)
   signInBtn.addEventListener("click", async () => {
-    const email = (emailInput.value || "").trim();
-    if(!email) return alert("Enter an email.");
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.href }
-    });
-    if(error) return alert(error.message);
-    alert("Magic link sent. Open it on this device to sign in.");
+    try{
+      const email = (emailInput.value || "").trim();
+      if(!email) return alert("Enter an email.");
+
+      if(SUPABASE_URL.includes("PASTE_") || SUPABASE_ANON_KEY.includes("PASTE_")){
+        return alert("You didn’t paste your SUPABASE_URL / SUPABASE_ANON_KEY yet.");
+      }
+
+      setSync("idle"); setSyncLabel("sending link…");
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          // Must be an allowed Redirect URL in Supabase Auth settings
+          emailRedirectTo: window.location.href
+        }
+      });
+
+      if(error){
+        console.error(error);
+        setSync("bad"); setSyncLabel("send failed");
+        return alert("Send failed: " + error.message);
+      }
+
+      console.log("OTP request ok:", data);
+      setSync("ok"); setSyncLabel("link sent");
+      alert("Magic link sent. Check inbox + spam. Open the link on THIS device to finish login.");
+    }catch(e){
+      console.error(e);
+      setSync("bad"); setSyncLabel("error");
+      alert("Unexpected error: " + (e?.message || e));
+    }
   });
 
   signOutBtn.addEventListener("click", async () => {
@@ -416,7 +612,6 @@
     await refreshAuthUI();
   });
 
-  // Auth state change
   supabase.auth.onAuthStateChange(async () => {
     await refreshAuthUI();
   });
@@ -425,7 +620,8 @@
   datePick.addEventListener("change", () => {
     selectedDate = datePick.value || toISO(new Date());
     ensureDay(selectedDate);
-    markDirty(); // because ensuring day might create new day
+    // Creating a day is a real state change (so it should save)
+    markDirty();
     render();
   });
 
@@ -435,6 +631,7 @@
   addTaskBtn.addEventListener("click", () => {
     const name = prompt("Task name:", "New task");
     if(!name) return;
+
     const w = workingObj();
     const t = mkTask(name.trim());
     w.obj.tasks = w.obj.tasks || [];
@@ -450,19 +647,23 @@
   applyTplBtn.addEventListener("click", () => {
     if(mode!=="day") return;
     if(!confirm("Overwrite this date with weekday template? (resets checks + unlocks)")) return;
+
     const wd = wdMonFirst(parseISO(selectedDate));
     const tpl = state.templates[wd] || { tasks: [] };
+
     const day = state.days[selectedDate];
     day.tasks = structuredClone(tpl.tasks || []);
     day.checks = {};
     for(const t of day.tasks) day.checks[t.id] = false;
     day.locked = false;
     day.result = null;
+
     markDirty();
     render();
   });
 
   lockBtn.addEventListener("click", () => {
+    if(mode!=="day") return;
     ensureDay(selectedDate);
     const day = state.days[selectedDate];
     day.result = computeAutoResult(selectedDate);
