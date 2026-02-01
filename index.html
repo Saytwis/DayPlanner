@@ -3,298 +3,413 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Planner Pro (No Login Sync)</title>
+  <title>Planner</title>
   <style>
     :root{
-      --bg:#0b0f14;
-      --panel:#0f1621;
-      --panel2:#0c131d;
-      --text:#e8eef6;
-      --muted:#9fb0c3;
-      --line:#1d2a3a;
-      --line2:#26364a;
+      --bg0:#070a0f;
+      --bg1:#0a0f16;
+      --panel: rgba(255,255,255,.035);
+      --panel2: rgba(0,0,0,.20);
+      --line: rgba(255,255,255,.085);
+      --line2: rgba(255,255,255,.12);
 
-      --acc:#5cc8ff;
-      --acc2:#9c7bff;
+      --text:#edf2f9;
+      --muted:#a9b7c9;
 
-      --good:#39d98a;
+      --acc:#bfc8ff;   /* cool pearl */
+      --acc2:#f3d7ff;  /* rose pearl */
+      --good:#42e3a1;
       --bad:#ff5c7a;
       --warn:#ffd166;
 
-      --shadow: 0 10px 40px rgba(0,0,0,.35);
-      --radius: 16px;
-      --radius2: 22px;
-      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      --shadow: 0 18px 70px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 24px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background: radial-gradient(1200px 700px at 20% -10%, rgba(92,200,255,.10), transparent 60%),
-                  radial-gradient(1200px 700px at 80% 0%, rgba(156,123,255,.10), transparent 55%),
-                  var(--bg);
+      font-family:var(--font);
       color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% -10%, rgba(191,200,255,.12), transparent 60%),
+        radial-gradient(1100px 650px at 80% 0%, rgba(243,215,255,.10), transparent 55%),
+        radial-gradient(900px 500px at 50% 110%, rgba(255,255,255,.05), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    /* Subtle moving grain */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+      opacity:.08;
+      mix-blend-mode:overlay;
+      pointer-events:none;
+      animation: grain 8s steps(6) infinite;
+    }
+    @keyframes grain{
+      0%{transform:translate(0,0)}
+      20%{transform:translate(-2%,1%)}
+      40%{transform:translate(2%,-1%)}
+      60%{transform:translate(-1%,-2%)}
+      80%{transform:translate(1%,2%)}
+      100%{transform:translate(0,0)}
     }
 
     /* Layout */
-    .page{
-      max-width:1100px;
+    .shell{
+      max-width:1120px;
       margin:0 auto;
-      padding:18px 16px 28px;
+      padding:16px 14px 28px;
       display:grid;
       gap:12px;
       grid-template-columns: 1.25fr .75fr;
       align-items:start;
     }
     @media(max-width:980px){
-      .page{grid-template-columns:1fr}
+      .shell{grid-template-columns:1fr}
     }
 
-    /* Header */
-    header{
-      max-width:1100px;
+    /* Luxe top bar */
+    .topbar{
+      max-width:1120px;
       margin:0 auto;
-      padding:18px 16px 6px;
+      padding:14px 14px 6px;
       display:flex;
-      align-items:flex-end;
+      align-items:center;
       justify-content:space-between;
       gap:12px;
       flex-wrap:wrap;
     }
-    .title{
-      display:flex;flex-direction:column;gap:6px;
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      user-select:none;
     }
-    h1{margin:0;font-size:18px;letter-spacing:.2px}
-    .sub{margin:0;color:var(--muted);font-size:13px;line-height:1.35}
-    .topPills{display:flex;gap:10px;flex-wrap:wrap}
+    .mark{
+      width:34px; height:34px; border-radius:12px;
+      border:1px solid var(--line);
+      background:
+        radial-gradient(18px 18px at 30% 25%, rgba(255,255,255,.14), transparent 65%),
+        linear-gradient(135deg, rgba(191,200,255,.20), rgba(243,215,255,.12));
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+      transform: translateZ(0);
+    }
+    .mark::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background:linear-gradient(120deg, transparent 35%, rgba(255,255,255,.22) 50%, transparent 65%);
+      transform:translateX(-40%) rotate(10deg);
+      animation: shimmer 5.6s ease-in-out infinite;
+      opacity:.8;
+    }
+    @keyframes shimmer{
+      0%{transform:translateX(-60%) rotate(10deg)}
+      35%{transform:translateX(60%) rotate(10deg)}
+      100%{transform:translateX(60%) rotate(10deg)}
+    }
+    .brand h1{
+      margin:0;
+      font-size:13px;
+      letter-spacing: .22em;
+      text-transform:uppercase;
+      color:rgba(237,242,249,.92);
+    }
+    .brand span{
+      display:block;
+      font-size:11px;
+      color:var(--muted);
+      letter-spacing:.06em;
+      margin-top:2px;
+    }
 
     /* Cards */
     .card{
       border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));
       border-radius: var(--radius2);
-      overflow:hidden;
+      background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.02));
       box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+      transform: translateZ(0);
+      animation: popIn .45s ease both;
     }
+    @keyframes popIn{
+      from{opacity:0; transform:translateY(6px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
     .bar{
       display:flex;
-      align-items:center;
       justify-content:space-between;
+      align-items:center;
       gap:10px;
       padding:10px 12px;
+      background: rgba(0,0,0,.22);
       border-bottom:1px solid var(--line);
-      background:rgba(0,0,0,.18);
       flex-wrap:wrap;
     }
     .content{padding:12px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .muted{color:var(--muted);font-size:12px}
 
-    /* Pills & buttons */
+    /* Pills/buttons */
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .muted{color:var(--muted); font-size:12px}
+
     .pill{
       border:1px solid var(--line);
-      background:rgba(0,0,0,.18);
+      background: rgba(0,0,0,.18);
       border-radius:999px;
       padding:6px 10px;
       font-size:12px;
       color:var(--muted);
-      display:flex;gap:8px;align-items:center;
+      display:flex; gap:8px; align-items:center;
       white-space:nowrap;
+      transition:.18s;
     }
-    .pill b{color:var(--text);font-weight:700}
+    .pill b{color:var(--text); font-weight:800}
+
     .dot{
       width:8px;height:8px;border-radius:50%;
       background:var(--warn);
-      display:inline-block;
-      box-shadow:0 0 0 3px rgba(255,209,102,.10);
+      box-shadow:0 0 0 3px rgba(255,209,102,.12);
     }
-    .dot.ok{background:var(--good); box-shadow:0 0 0 3px rgba(57,217,138,.10)}
-    .dot.bad{background:var(--bad); box-shadow:0 0 0 3px rgba(255,92,122,.10)}
+    .dot.ok{background:var(--good); box-shadow:0 0 0 3px rgba(66,227,161,.12)}
+    .dot.bad{background:var(--bad); box-shadow:0 0 0 3px rgba(255,92,122,.12)}
 
     .btn{
       border:1px solid var(--line);
-      background:rgba(0,0,0,.18);
+      background: rgba(0,0,0,.18);
       color:var(--text);
-      border-radius:14px;
+      border-radius: 16px;
       padding:8px 10px;
       font-size:13px;
       cursor:pointer;
-      transition:.15s;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
       user-select:none;
     }
-    .btn:hover{border-color:rgba(92,200,255,.45); transform: translateY(-1px)}
-    .btn:active{transform: translateY(0px)}
-    .btn.primary{border-color:rgba(92,200,255,.65); background:rgba(92,200,255,.10)}
-    .btn.good{border-color:rgba(57,217,138,.55); background:rgba(57,217,138,.10)}
-    .btn.bad{border-color:rgba(255,92,122,.55); background:rgba(255,92,122,.10)}
-    .btn.ghost{opacity:.9}
-    .btn.small{padding:7px 9px; font-size:12px; border-radius:12px}
+    .btn:hover{
+      border-color: rgba(255,255,255,.18);
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.04);
+    }
+    .btn:active{transform: translateY(0px) scale(.99)}
+    .btn.primary{
+      border-color: rgba(191,200,255,.30);
+      background: linear-gradient(135deg, rgba(191,200,255,.12), rgba(243,215,255,.10));
+    }
+    .btn.good{
+      border-color: rgba(66,227,161,.30);
+      background: rgba(66,227,161,.08);
+    }
+    .btn.bad{
+      border-color: rgba(255,92,122,.32);
+      background: rgba(255,92,122,.08);
+    }
+    .btn.small{padding:7px 9px; font-size:12px; border-radius:14px}
 
     /* Inputs */
     input, select, textarea{
       border:1px solid var(--line);
-      background:rgba(0,0,0,.22);
+      background: rgba(0,0,0,.22);
       color:var(--text);
-      border-radius:14px;
+      border-radius: 16px;
       padding:8px 10px;
       font-size:13px;
       outline:none;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .18s ease;
     }
     input:focus, select:focus, textarea:focus{
-      border-color: rgba(92,200,255,.55);
-      box-shadow:0 0 0 3px rgba(92,200,255,.10);
+      border-color: rgba(191,200,255,.30);
+      box-shadow: 0 0 0 3px rgba(191,200,255,.10);
     }
     textarea{min-height:70px; resize:vertical}
 
-    /* Segmented tabs */
+    /* Tabs */
     .seg{
       display:inline-flex;
       border:1px solid var(--line);
       border-radius:999px;
       overflow:hidden;
-      background:rgba(0,0,0,.18);
+      background: rgba(0,0,0,.18);
     }
     .seg button{
-      border:0;background:transparent;color:var(--muted);
-      padding:8px 10px;cursor:pointer;font-size:12px;
+      border:0;
+      background: transparent;
+      color:var(--muted);
+      padding:8px 10px;
+      cursor:pointer;
+      font-size:12px;
+      transition:.18s;
     }
     .seg button.active{
       color:var(--text);
-      background: linear-gradient(90deg, rgba(92,200,255,.14), rgba(156,123,255,.12));
+      background: linear-gradient(90deg, rgba(191,200,255,.12), rgba(243,215,255,.10));
     }
 
-    /* Toast */
-    .toast{
-      position:fixed;
-      left:16px;
-      bottom:16px;
-      width:min(520px, calc(100% - 32px));
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:rgba(10,16,24,.92);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      padding:12px;
-      display:none;
-      gap:10px;
-      align-items:flex-start;
-      z-index:50;
-    }
-    .toast.show{display:flex}
-    .toast .tTitle{font-weight:800; font-size:13px}
-    .toast .tBody{color:var(--muted); font-size:12px; line-height:1.35}
-    .toast .tActions{margin-left:auto; display:flex; gap:8px; align-items:center}
-    .toast .badge{
-      font-family:var(--mono);
-      font-size:12px;
-      padding:2px 8px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      color:var(--muted);
-      background:rgba(0,0,0,.18);
-    }
-
-    /* Inline “confirm bar” (no confirm popups) */
+    /* No popups confirm bar */
     .confirmBar{
-      border:1px dashed rgba(255,209,102,.45);
-      background:rgba(255,209,102,.08);
-      border-radius:16px;
+      border:1px dashed rgba(255,209,102,.40);
+      background: rgba(255,209,102,.06);
+      border-radius: 18px;
       padding:10px;
       display:none;
       gap:10px;
       align-items:center;
       justify-content:space-between;
       margin-top:10px;
+      animation: fadeSlide .22s ease both;
     }
     .confirmBar.show{display:flex}
+    @keyframes fadeSlide{
+      from{opacity:0; transform:translateY(6px)}
+      to{opacity:1; transform:translateY(0)}
+    }
     .confirmBar .msg{color:var(--muted); font-size:12px; line-height:1.35}
 
-    /* Two-panel planner */
-    .grid2{
+    /* Planner inner layout */
+    .split{
       display:grid;
-      grid-template-columns: 1fr;
       gap:10px;
+      grid-template-columns: 1fr 1fr;
+      margin-top:12px;
+    }
+    @media(max-width:980px){
+      .split{grid-template-columns:1fr}
+    }
+    .panel{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.16);
+      overflow:hidden;
+    }
+    .panel .pbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      padding:10px 10px;
+      border-bottom:1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      flex-wrap:wrap;
+    }
+    .panel .pbody{padding:10px}
+
+    .sectionTitle{
+      font-weight:900;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      font-size:11px;
+      color:rgba(237,242,249,.78);
     }
 
     /* Lists */
-    .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .list{display:flex; flex-direction:column; gap:8px; margin-top:10px}
 
     .item{
       border:1px solid var(--line);
-      border-radius:16px;
-      background:rgba(0,0,0,.14);
+      border-radius: 18px;
+      background: rgba(0,0,0,.14);
       padding:10px;
       display:grid;
       gap:10px;
       align-items:center;
+      transition: transform .14s ease, border-color .14s ease, background .14s ease;
+    }
+    .item:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
     }
 
-    /* Checklist item layout */
-    .todo{
-      grid-template-columns: 26px 1fr auto;
-    }
+    /* Checklist item */
+    .todo{grid-template-columns: 26px 1fr auto}
+
     .check{
-      width:18px;height:18px;border-radius:6px;border:1px solid var(--line);
-      cursor:pointer;display:grid;place-items:center;user-select:none;
+      width:18px;height:18px;border-radius:7px;
+      border:1px solid var(--line);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      user-select:none;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
     }
-    .check.done{border-color:rgba(57,217,138,.6);background:rgba(57,217,138,.12)}
-    .check.done::after{content:"✓";color:var(--good);font-weight:900;font-size:12px}
+    .check:active{transform: scale(.96)}
+    .check.done{
+      border-color: rgba(66,227,161,.40);
+      background: rgba(66,227,161,.10);
+    }
+    .check.done::after{
+      content:"✓";
+      color:var(--good);
+      font-weight:900;
+      font-size:12px;
+    }
 
     .name{
-      outline:none;border-radius:12px;padding:2px 6px;
+      outline:none;
+      border-radius: 14px;
+      padding:2px 6px;
       min-height:22px;
     }
-    .name:focus{box-shadow:0 0 0 3px rgba(92,200,255,.12);background:rgba(92,200,255,.06)}
-
-    /* Schedule item layout */
-    .block{
-      grid-template-columns: 68px 1fr auto;
+    .name:focus{
+      box-shadow:0 0 0 3px rgba(191,200,255,.10);
+      background: rgba(191,200,255,.06);
     }
+
+    /* Schedule item */
+    .block{grid-template-columns: 70px 1fr auto}
+
     .timeBox{
       font-family:var(--mono);
       font-size:12px;
       color:var(--muted);
       border:1px solid var(--line);
-      background:rgba(0,0,0,.18);
-      border-radius:14px;
+      background: rgba(0,0,0,.18);
+      border-radius: 16px;
       padding:7px 8px;
-      display:flex;flex-direction:column;gap:3px;
+      display:flex; flex-direction:column; gap:3px;
       align-items:flex-start;
-      min-width:68px;
+      min-width:70px;
     }
-    .timeBox b{color:var(--text); font-weight:800}
-    .mini{
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-    }
+    .timeBox b{color:var(--text); font-weight:900}
+
+    .mini{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
     .tag{
       font-size:11px;
       border:1px solid var(--line);
       border-radius:999px;
       padding:2px 8px;
       color:var(--muted);
-      background:rgba(0,0,0,.18);
+      background: rgba(0,0,0,.18);
       font-family:var(--mono);
     }
-    .tag.acc{border-color:rgba(92,200,255,.35); color:rgba(92,200,255,.85)}
-    .tag.good{border-color:rgba(57,217,138,.35); color:rgba(57,217,138,.85)}
-    .tag.bad{border-color:rgba(255,92,122,.35); color:rgba(255,92,122,.85)}
+    .tag.pearl{
+      border-color: rgba(191,200,255,.22);
+      color: rgba(191,200,255,.82);
+    }
 
     /* Timeline */
     .timeline{
       border:1px solid var(--line);
       border-radius: var(--radius);
-      background:rgba(0,0,0,.14);
+      background: rgba(0,0,0,.14);
       padding:10px;
-      margin-top:10px;
+      margin-top:12px;
+      animation: popIn .35s ease both;
     }
     .tlRow{
       display:grid;
-      grid-template-columns: 54px 1fr;
+      grid-template-columns: 56px 1fr;
       gap:10px;
       align-items:stretch;
       padding:8px 0;
-      border-top:1px solid rgba(29,42,58,.65);
+      border-top:1px solid rgba(255,255,255,.06);
     }
     .tlRow:first-child{border-top:0}
     .tlTime{
@@ -305,259 +420,310 @@
     }
     .tlCard{
       border:1px solid var(--line);
-      border-radius:14px;
-      background:rgba(0,0,0,.12);
+      border-radius: 16px;
+      background: rgba(0,0,0,.12);
       padding:8px 10px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
+      display:flex; flex-direction:column; gap:6px;
     }
-    .tlCard .top{
-      display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+    .tlTop{
+      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
     }
-    .tlTitle{font-weight:800;font-size:13px}
-    .tlMeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .tlTitle{font-weight:900; font-size:13px}
+    .tlMeta{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 
     /* Calendar */
     .calDow{font-size:11px;color:var(--muted);text-align:center;padding:6px 0;}
     .calDay{
       border:1px solid var(--line);
-      border-radius:16px;
-      background:rgba(0,0,0,.14);
-      min-height:66px;
+      border-radius: 18px;
+      background: rgba(0,0,0,.14);
+      min-height:70px;
       padding:8px;
       cursor:pointer;
       position:relative;
       user-select:none;
-      transition:.12s;
+      transition: transform .14s ease, border-color .14s ease, background .14s ease;
     }
-    .calDay:hover{border-color:rgba(92,200,255,.35); transform: translateY(-1px)}
+    .calDay:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.16);
+      background: rgba(255,255,255,.03);
+    }
     .calDay.selected{
-      border-color:rgba(92,200,255,.65);
-      box-shadow:0 0 0 3px rgba(92,200,255,.10);
+      border-color: rgba(191,200,255,.28);
+      box-shadow: 0 0 0 3px rgba(191,200,255,.08);
       transform:none;
     }
-    .calNum{
-      font-size:12px;
-      color:var(--muted);
-      font-family:var(--mono);
-    }
-    .calMark{
-      position:absolute;right:10px;top:10px;
-      font-weight:900;font-size:16px;font-family:var(--mono);
-    }
+    .calNum{font-size:12px;color:var(--muted);font-family:var(--mono)}
+    .calMark{position:absolute;right:10px;top:10px;font-weight:900;font-size:16px;font-family:var(--mono)}
     .calMark.good{color:var(--good)}
     .calMark.bad{color:var(--bad)}
-    .calHint{
-      position:absolute;left:10px;bottom:10px;
-      display:flex; gap:6px; flex-wrap:wrap;
-      opacity:.9;
+    .calHint{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;flex-wrap:wrap;opacity:.9}
+    .calMiniDot{width:7px;height:7px;border-radius:50%;background:rgba(169,183,201,.25);border:1px solid rgba(255,255,255,.08)}
+    .calMiniDot.on{background:rgba(191,200,255,.45)}
+    .calMiniDot.done{background:rgba(66,227,161,.45)}
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:16px;
+      bottom:16px;
+      width:min(560px, calc(100% - 32px));
+      border:1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(10,14,20,.86);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      padding:12px;
+      display:none;
+      gap:10px;
+      align-items:flex-start;
+      z-index:50;
+      animation: fadeSlide .22s ease both;
     }
-    .calMiniDot{
-      width:7px;height:7px;border-radius:50%;
-      background:rgba(159,176,195,.35);
-      border:1px solid rgba(29,42,58,.8);
+    .toast.show{display:flex}
+    .toast .tTitle{font-weight:950; font-size:13px; letter-spacing:.02em}
+    .toast .tBody{color:var(--muted); font-size:12px; line-height:1.35}
+    .toast .tActions{margin-left:auto; display:flex; gap:8px; align-items:center}
+    .toast .badge{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      background: rgba(0,0,0,.18);
     }
-    .calMiniDot.on{background:rgba(92,200,255,.55)}
-    .calMiniDot.done{background:rgba(57,217,138,.55)}
+
+    /* Key pane polish */
+    .keyWrap{
+      display:flex; flex-direction:column; gap:10px;
+      padding:8px 2px 2px;
+    }
+    .keyRow{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none !important; transition:none !important}
+      body::before{animation:none !important}
+    }
   </style>
 </head>
 
 <body>
-<header>
-  <div class="title">
-    <h1>Planner Pro (No Login, Cross-Device Sync)</h1>
-    <p class="sub">Enter the same <b>Planner Key</b> on phone + laptop to sync. Your key is stored only on the device (localStorage). No popups; all actions are inline.</p>
-  </div>
-
-  <div class="topPills">
-    <span class="pill">Sync: <span id="syncDot" class="dot"></span> <b id="syncLabel">locked</b></span>
-    <span class="pill">Key: <b id="keyLabel">not set</b></span>
-    <span class="pill">Selected: <b id="selLabel">—</b></span>
-  </div>
-</header>
-
-<div class="page">
-  <!-- LEFT: Planner -->
-  <section class="card">
-    <div class="bar">
-      <div class="row">
-        <button class="btn" id="pullBtn">Pull</button>
-        <button class="btn" id="pushBtn">Push</button>
-        <button class="btn" id="clearKeyBtn">Clear key</button>
-      </div>
-      <div class="row">
-        <span class="pill">Autosave: <b id="autosaveLabel">on</b></span>
+  <!-- Top luxe bar (no long text) -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div>
+        <h1>PLANNER</h1>
+        <span id="selLabel">—</span>
       </div>
     </div>
 
-    <!-- Key gate -->
-    <div class="content" id="keyPane">
-      <div class="row">
-        <input id="keyInput" type="password" placeholder="Planner Key (12+ chars recommended)" style="min-width:320px"/>
-        <button class="btn primary" id="unlockBtn">Unlock</button>
-      </div>
-
-      <div class="muted" style="margin-top:10px;line-height:1.35">
-        Tip: use a long passphrase. Same key on every device = same planner.
-      </div>
-
-      <div class="confirmBar show" style="margin-top:12px">
-        <div class="msg">
-          <b>Security note:</b> Anyone with your key can read/write your planner row.
-          Use a strong key + enable RLS in Supabase.
-        </div>
-      </div>
+    <div class="row">
+      <span class="pill">Sync: <span id="syncDot" class="dot"></span> <b id="syncLabel">locked</b></span>
+      <span class="pill">Key: <b id="keyLabel">not set</b></span>
     </div>
+  </div>
 
-    <!-- Planner -->
-    <div class="content" id="plannerPane" style="display:none">
-      <div class="bar" style="border:1px solid var(--line);border-radius:18px;margin-bottom:12px">
+  <div class="shell">
+    <!-- LEFT: Planner -->
+    <section class="card">
+      <div class="bar">
         <div class="row">
-          <span class="pill">Date: <b><input id="datePick" type="date"/></b></span>
-
-          <span class="seg">
-            <button id="tabDay" class="active">Day</button>
-            <button id="tabTemplate">Template</button>
-          </span>
-
-          <span class="seg">
-            <button id="viewChecklist" class="active">Checklist</button>
-            <button id="viewSchedule">Schedule</button>
-            <button id="viewTimeline">Timeline</button>
-          </span>
+          <button class="btn" id="pullBtn">Pull</button>
+          <button class="btn" id="pushBtn">Push</button>
+          <button class="btn" id="clearKeyBtn">Clear key</button>
         </div>
-
         <div class="row">
-          <button class="btn primary" id="addBtn">+ Add</button>
-          <button class="btn" id="applyTplBtn">Apply template → day</button>
-          <button class="btn good" id="lockBtn">Lock day (auto ✅/❌)</button>
+          <span class="pill">Progress: <b id="progress">0/0</b></span>
+          <span class="pill">Mode: <b id="modeLabel">Day</b></span>
         </div>
       </div>
 
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:900" id="leftTitle">Day</div>
-          <div class="muted" id="leftSubtitle">Checklist + schedule live here. Lock the day to finalize ✅/❌.</div>
+      <!-- Key gate -->
+      <div class="content" id="keyPane">
+        <div class="keyWrap">
+          <div class="keyRow">
+            <input id="keyInput" type="password" placeholder="Planner Key" style="min-width:320px"/>
+            <button class="btn primary" id="unlockBtn">Unlock</button>
+          </div>
+          <div class="muted">Same key on each device = same planner. (Stored locally; not recoverable.)</div>
         </div>
-        <div class="pill"><b id="progress">0/0</b> done</div>
       </div>
 
-      <!-- Editor: Add item (inline, no prompt) -->
-      <div class="card" style="margin-top:10px; border-radius:18px">
-        <div class="bar" style="border-bottom:1px solid var(--line)">
+      <!-- Planner -->
+      <div class="content" id="plannerPane" style="display:none">
+        <div class="bar" style="border:1px solid var(--line);border-radius:20px;margin-bottom:12px">
           <div class="row">
-            <span class="pill">Quick Add</span>
-            <span class="muted">Adds to the current view (Checklist or Schedule).</span>
+            <span class="pill">Date: <b><input id="datePick" type="date"/></b></span>
+
+            <span class="seg">
+              <button id="tabDay" class="active">Day</button>
+              <button id="tabTemplate">Template</button>
+            </span>
+
+            <span class="seg">
+              <button id="tabMain" class="active">Checklist + Schedule</button>
+              <button id="tabTimeline">Timeline</button>
+            </span>
           </div>
+
           <div class="row">
-            <button class="btn small" id="hideAddBtn">Hide</button>
+            <button class="btn primary" id="addTodoBtn">+ Checklist</button>
+            <button class="btn primary" id="addBlockBtn">+ Schedule</button>
+            <button class="btn" id="applyTplBtn">Apply template → day</button>
+            <button class="btn good" id="lockBtn">Lock day (auto ✅/❌)</button>
           </div>
         </div>
-        <div class="content" id="addPane">
-          <div class="row" style="align-items:flex-end">
-            <div style="flex:1; min-width:220px">
-              <div class="muted" style="margin:0 0 6px">Title</div>
-              <input id="addTitle" placeholder="e.g., 90-min Study Block / Rings Workout" style="width:100%"/>
-            </div>
 
-            <div id="schedFields" style="display:none" class="row">
-              <div>
-                <div class="muted" style="margin:0 0 6px">Start</div>
-                <input id="addStart" type="time" value="09:00"/>
-              </div>
-              <div>
-                <div class="muted" style="margin:0 0 6px">Duration</div>
-                <select id="addDur">
-                  <option value="30">30m</option>
-                  <option value="45">45m</option>
-                  <option value="60">60m</option>
-                  <option value="75">75m</option>
-                  <option value="90" selected>90m</option>
-                  <option value="120">120m</option>
-                </select>
-              </div>
-              <div>
-                <div class="muted" style="margin:0 0 6px">Tag</div>
-                <select id="addTag">
-                  <option value="deep">deep</option>
-                  <option value="workout">workout</option>
-                  <option value="admin">admin</option>
-                  <option value="focus">focus</option>
-                  <option value="life">life</option>
-                </select>
-              </div>
-            </div>
-
-            <button class="btn primary" id="addCommit">Add</button>
-          </div>
-
-          <div class="muted" style="margin-top:10px;line-height:1.35">
-            No popups. If you need “danger” actions (delete/apply template), you’ll get an inline confirm bar.
-          </div>
-
-          <div class="confirmBar" id="confirmBar">
-            <div class="msg" id="confirmMsg">Confirm?</div>
+        <!-- Inline Add Panels (no prompts) -->
+        <div class="panel" id="addPanel" style="display:none">
+          <div class="pbar">
             <div class="row">
-              <button class="btn bad" id="confirmYes">Yes</button>
-              <button class="btn" id="confirmNo">Cancel</button>
+              <div class="sectionTitle" id="addTitleLabel">ADD</div>
+              <span class="pill" id="addTypePill">—</span>
+            </div>
+            <div class="row">
+              <button class="btn small" id="hideAddBtn">Hide</button>
+            </div>
+          </div>
+          <div class="pbody">
+            <div class="row" style="align-items:flex-end">
+              <div style="flex:1; min-width:220px">
+                <div class="muted" style="margin:0 0 6px">Title</div>
+                <input id="addTitle" placeholder="e.g., 90-min Study Block / Rings Workout" style="width:100%"/>
+              </div>
+
+              <div id="addSchedFields" class="row" style="display:none">
+                <div>
+                  <div class="muted" style="margin:0 0 6px">Start</div>
+                  <input id="addStart" type="time" value="09:00"/>
+                </div>
+                <div>
+                  <div class="muted" style="margin:0 0 6px">Duration</div>
+                  <select id="addDur">
+                    <option value="30">30m</option>
+                    <option value="45">45m</option>
+                    <option value="60">60m</option>
+                    <option value="75">75m</option>
+                    <option value="90" selected>90m</option>
+                    <option value="120">120m</option>
+                  </select>
+                </div>
+                <div>
+                  <div class="muted" style="margin:0 0 6px">Tag</div>
+                  <select id="addTag">
+                    <option value="deep">deep</option>
+                    <option value="workout">workout</option>
+                    <option value="admin">admin</option>
+                    <option value="focus">focus</option>
+                    <option value="life">life</option>
+                  </select>
+                </div>
+              </div>
+
+              <button class="btn primary" id="addCommit">Add</button>
+            </div>
+
+            <div class="confirmBar" id="confirmBar">
+              <div class="msg" id="confirmMsg">Confirm?</div>
+              <div class="row">
+                <button class="btn bad" id="confirmYes">Yes</button>
+                <button class="btn" id="confirmNo">Cancel</button>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- MAIN: Checklist + Schedule same page -->
+        <div id="mainPane">
+          <div class="split">
+            <!-- Checklist -->
+            <div class="panel">
+              <div class="pbar">
+                <div class="row">
+                  <div class="sectionTitle">CHECKLIST</div>
+                  <span class="pill"><b id="todoCount">0</b> items</span>
+                </div>
+                <div class="row">
+                  <span class="pill">Done: <b id="todoDone">0</b></span>
+                </div>
+              </div>
+              <div class="pbody">
+                <div class="list" id="todoList"></div>
+              </div>
+            </div>
+
+            <!-- Schedule -->
+            <div class="panel">
+              <div class="pbar">
+                <div class="row">
+                  <div class="sectionTitle">SCHEDULE</div>
+                  <span class="pill"><b id="blockCount">0</b> blocks</span>
+                </div>
+                <div class="row">
+                  <span class="pill">Style: <b>Minimal</b></span>
+                </div>
+              </div>
+              <div class="pbody">
+                <div class="list" id="blockList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIMELINE separate tab -->
+        <div id="timelinePane" style="display:none">
+          <div class="timeline" id="timeline"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Calendar -->
+    <aside class="card">
+      <div class="bar">
+        <div class="row" style="justify-content:space-between; width:100%">
+          <button class="btn" id="prevMonthBtn">←</button>
+          <div class="pill"><b id="calTitle">Month YYYY</b></div>
+          <button class="btn" id="nextMonthBtn">→</button>
+        </div>
       </div>
 
-      <!-- Views -->
-      <div id="viewChecklistPane" class="list"></div>
-      <div id="viewSchedulePane" class="list" style="display:none"></div>
-      <div id="viewTimelinePane" class="timeline" style="display:none"></div>
+      <div class="content">
+        <div id="calDow" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px;"></div>
+        <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;"></div>
 
-      <div class="muted" style="margin-top:10px;line-height:1.35">
-        Autosaves ~1s after edits. Pull/Push are manual overrides.
+        <div class="muted" style="margin-top:10px;line-height:1.35">
+          ✅/❌ after lock. Dots indicate checklist/schedule activity.
+        </div>
       </div>
-    </div>
-  </section>
-
-  <!-- RIGHT: Calendar -->
-  <aside class="card">
-    <div class="bar">
-      <div class="row" style="justify-content:space-between; width:100%">
-        <button class="btn" id="prevMonthBtn">←</button>
-        <div class="pill"><b id="calTitle">Month YYYY</b></div>
-        <button class="btn" id="nextMonthBtn">→</button>
-      </div>
-    </div>
-
-    <div class="content">
-      <div id="calDow" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px;"></div>
-      <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;"></div>
-
-      <div class="muted" style="margin-top:10px;line-height:1.35">
-        ✅/❌ appears after lock. Dots show if schedule/checklist has content.
-      </div>
-    </div>
-  </aside>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast">
-  <div>
-    <div class="tTitle" id="toastTitle">Title</div>
-    <div class="tBody" id="toastBody">Body</div>
+    </aside>
   </div>
-  <div class="tActions">
-    <span class="badge" id="toastBadge">info</span>
-    <button class="btn small" id="toastClose">Close</button>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <div>
+      <div class="tTitle" id="toastTitle">Title</div>
+      <div class="tBody" id="toastBody">Body</div>
+    </div>
+    <div class="tActions">
+      <span class="badge" id="toastBadge">info</span>
+      <button class="btn small" id="toastClose">Close</button>
+    </div>
   </div>
-</div>
 
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // ✅ Your Supabase Settings → API
+  // ✅ Supabase Settings → API
   const SUPABASE_URL = "https://lugcbtddrzpkfrlpawuq.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1Z2NidGRkcnpwa2ZybHBhd3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NjQxNzAsImV4cCI6MjA4NTU0MDE3MH0.H3lp8QSMWQsUbCEEK-U4SZKM7oAv8tXUTq99AK7QQK0";
 
-  // --- Key header ---
+  // Key hash header
   let keyHash = localStorage.getItem("PLANNER_KEY_HASH") || "";
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -581,31 +747,32 @@
   const keyInput = document.getElementById("keyInput");
   const unlockBtn = document.getElementById("unlockBtn");
   const clearKeyBtn = document.getElementById("clearKeyBtn");
-
   const pullBtn = document.getElementById("pullBtn");
   const pushBtn = document.getElementById("pushBtn");
 
   const datePick = document.getElementById("datePick");
-
   const tabDay = document.getElementById("tabDay");
   const tabTemplate = document.getElementById("tabTemplate");
+  const modeLabel = document.getElementById("modeLabel");
 
-  const viewChecklist = document.getElementById("viewChecklist");
-  const viewSchedule = document.getElementById("viewSchedule");
-  const viewTimeline = document.getElementById("viewTimeline");
+  const tabMain = document.getElementById("tabMain");
+  const tabTimeline = document.getElementById("tabTimeline");
+  const mainPane = document.getElementById("mainPane");
+  const timelinePane = document.getElementById("timelinePane");
 
   const applyTplBtn = document.getElementById("applyTplBtn");
   const lockBtn = document.getElementById("lockBtn");
 
-  const leftTitle = document.getElementById("leftTitle");
-  const leftSubtitle = document.getElementById("leftSubtitle");
   const progressEl = document.getElementById("progress");
 
-  const addBtn = document.getElementById("addBtn");
+  const addTodoBtn = document.getElementById("addTodoBtn");
+  const addBlockBtn = document.getElementById("addBlockBtn");
+  const addPanel = document.getElementById("addPanel");
+  const addTitleLabel = document.getElementById("addTitleLabel");
+  const addTypePill = document.getElementById("addTypePill");
   const hideAddBtn = document.getElementById("hideAddBtn");
-  const addPane = document.getElementById("addPane");
   const addTitle = document.getElementById("addTitle");
-  const schedFields = document.getElementById("schedFields");
+  const addSchedFields = document.getElementById("addSchedFields");
   const addStart = document.getElementById("addStart");
   const addDur = document.getElementById("addDur");
   const addTag = document.getElementById("addTag");
@@ -614,25 +781,28 @@
   const confirmBar = document.getElementById("confirmBar");
   const confirmMsg = document.getElementById("confirmMsg");
   const confirmYes = document.getElementById("confirmYes");
-  const confirmNo  = document.getElementById("confirmNo");
+  const confirmNo = document.getElementById("confirmNo");
 
-  const viewChecklistPane = document.getElementById("viewChecklistPane");
-  const viewSchedulePane = document.getElementById("viewSchedulePane");
-  const viewTimelinePane = document.getElementById("viewTimelinePane");
+  const todoList = document.getElementById("todoList");
+  const blockList = document.getElementById("blockList");
+  const todoCount = document.getElementById("todoCount");
+  const todoDone = document.getElementById("todoDone");
+  const blockCount = document.getElementById("blockCount");
+
+  const timeline = document.getElementById("timeline");
 
   const calTitle = document.getElementById("calTitle");
   const calGrid  = document.getElementById("calGrid");
   const calDow   = document.getElementById("calDow");
   const prevMonthBtn = document.getElementById("prevMonthBtn");
   const nextMonthBtn = document.getElementById("nextMonthBtn");
+  const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
   const toast = document.getElementById("toast");
   const toastTitle = document.getElementById("toastTitle");
   const toastBody = document.getElementById("toastBody");
   const toastBadge = document.getElementById("toastBadge");
   const toastClose = document.getElementById("toastClose");
-
-  const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
   // ---------- Helpers ----------
   const pad2 = (n) => String(n).padStart(2,"0");
@@ -648,21 +818,19 @@
     syncLabel.textContent = label || status;
   }
 
-  function showToast(title, body, badge="info"){
+  // Toast
+  toastClose.addEventListener("click", ()=> toast.classList.remove("show"));
+  let toastTimer = null;
+  function quickToast(title, body, badge="info", ms=2400){
     toastTitle.textContent = title;
     toastBody.textContent = body;
     toastBadge.textContent = badge;
     toast.classList.add("show");
-  }
-  toastClose.addEventListener("click", ()=> toast.classList.remove("show"));
-  let toastTimer = null;
-  function quickToast(title, body, badge="info", ms=2400){
-    showToast(title, body, badge);
     if(toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(()=> toast.classList.remove("show"), ms);
   }
 
-  // Inline confirm (no confirm())
+  // Inline confirm
   let confirmAction = null;
   function askConfirm(msg, action){
     confirmMsg.textContent = msg;
@@ -673,10 +841,7 @@
     confirmBar.classList.remove("show");
     confirmAction = null;
   }
-  confirmYes.addEventListener("click", ()=>{
-    if(confirmAction) confirmAction();
-    clearConfirm();
-  });
+  confirmYes.addEventListener("click", ()=>{ if(confirmAction) confirmAction(); clearConfirm(); });
   confirmNo.addEventListener("click", clearConfirm);
 
   async function sha256Hex(str){
@@ -686,33 +851,27 @@
   }
 
   // ---------- Data model ----------
-  // We now store:
-  // templates[weekday] = { todos:[], blocks:[] }
-  // days[date]        = { todos:[], todoChecks:{}, blocks:[], locked:false, result:null }
   const mkTodo = (name) => ({ id: crypto.randomUUID(), name });
   const mkBlock = (title, start="09:00", durMin=90, tag="deep") =>
     ({ id: crypto.randomUUID(), title, start, durMin, tag, notes:"" });
 
   const defaultState = {
     templates: {
-      0: { // Monday
-        todos: [mkTodo("Workout"), mkTodo("Study block")],
-        blocks:[mkBlock("90-min Study", "09:00", 90, "deep"), mkBlock("Workout", "17:30", 60, "workout")]
-      },
-      1: { todos: [mkTodo("Workout"), mkTodo("Project work")], blocks:[mkBlock("Project Build", "10:00", 90, "focus")] },
-      2: { todos: [mkTodo("Workout"), mkTodo("90-min study")],  blocks:[mkBlock("Deep Study", "09:00", 90, "deep")] },
-      3: { todos: [mkTodo("Workout"), mkTodo("Reading 10 pages")], blocks:[mkBlock("Reading", "20:00", 30, "life")] },
-      4: { todos: [mkTodo("Workout"), mkTodo("Weekly review")], blocks:[mkBlock("Review", "18:00", 45, "admin")] },
-      5: { todos: [mkTodo("Workout"), mkTodo("Life reset")], blocks:[mkBlock("Reset + Plan", "12:00", 60, "life")] },
-      6: { todos: [mkTodo("Walk"), mkTodo("Prep week")], blocks:[mkBlock("Walk", "16:00", 45, "workout")] },
+      0: { todos:[mkTodo("Workout"), mkTodo("Study block")], blocks:[mkBlock("90-min Study", "09:00", 90, "deep"), mkBlock("Workout", "17:30", 60, "workout")] },
+      1: { todos:[mkTodo("Workout"), mkTodo("Project work")], blocks:[mkBlock("Project Build", "10:00", 90, "focus")] },
+      2: { todos:[mkTodo("Workout"), mkTodo("90-min study")], blocks:[mkBlock("Deep Study", "09:00", 90, "deep")] },
+      3: { todos:[mkTodo("Workout"), mkTodo("Reading 10 pages")], blocks:[mkBlock("Reading", "20:00", 30, "life")] },
+      4: { todos:[mkTodo("Workout"), mkTodo("Weekly review")], blocks:[mkBlock("Review", "18:00", 45, "admin")] },
+      5: { todos:[mkTodo("Workout"), mkTodo("Life reset")], blocks:[mkBlock("Reset + Plan", "12:00", 60, "life")] },
+      6: { todos:[mkTodo("Walk"), mkTodo("Prep week")], blocks:[mkBlock("Walk", "16:00", 45, "workout")] },
     },
     days: {}
   };
 
   let state = structuredClone(defaultState);
   let selectedDate = toISO(new Date());
-  let mode = "day";        // "day" | "template"
-  let view = "checklist";  // "checklist" | "schedule" | "timeline"
+  let mode = "day";          // day | template
+  let view = "main";         // main | timeline
   let calendarMonth = new Date(); calendarMonth.setDate(1);
 
   datePick.value = selectedDate;
@@ -721,14 +880,7 @@
     if(!state.days[dateStr]){
       const wd = wdMonFirst(parseISO(dateStr));
       const tpl = state.templates[wd] || { todos:[], blocks:[] };
-
-      const day = {
-        todos: structuredClone(tpl.todos||[]),
-        todoChecks: {},
-        blocks: structuredClone(tpl.blocks||[]),
-        locked:false,
-        result:null
-      };
+      const day = { todos: structuredClone(tpl.todos||[]), todoChecks:{}, blocks: structuredClone(tpl.blocks||[]), locked:false, result:null };
       for(const t of day.todos) day.todoChecks[t.id] = false;
       state.days[dateStr] = day;
     } else {
@@ -736,7 +888,6 @@
       day.todos ||= [];
       day.todoChecks ||= {};
       day.blocks ||= [];
-
       for(const t of day.todos){
         if(typeof day.todoChecks[t.id] !== "boolean") day.todoChecks[t.id] = false;
       }
@@ -760,12 +911,11 @@
     ensureDay(dateStr);
     const day = state.days[dateStr];
     const allDone = (day.todos||[]).every(t => !!day.todoChecks[t.id]);
-    // You can change logic: include schedule completion later if you want.
     return allDone ? "pass" : "fail";
   }
 
   function minutesToEnd(start, durMin){
-    const [hh,mm] = start.split(":").map(Number);
+    const [hh,mm] = (start||"09:00").split(":").map(Number);
     const total = hh*60 + mm + Number(durMin||0);
     const endH = Math.floor(total/60)%24;
     const endM = total%60;
@@ -775,7 +925,9 @@
   // ---------- Render ----------
   function renderHeader(){
     const wd = wdMonFirst(parseISO(selectedDate));
-    selLabel.textContent = `${selectedDate} (${wdName(wd)})`;
+    selLabel.textContent = `${selectedDate} • ${wdName(wd)}`;
+    modeLabel.textContent = (mode === "day") ? "Day" : "Template";
+    keyLabel.textContent = maskHash(keyHash);
   }
 
   function render(){
@@ -784,42 +936,22 @@
     tabDay.classList.toggle("active", mode==="day");
     tabTemplate.classList.toggle("active", mode==="template");
 
-    viewChecklist.classList.toggle("active", view==="checklist");
-    viewSchedule.classList.toggle("active", view==="schedule");
-    viewTimeline.classList.toggle("active", view==="timeline");
+    tabMain.classList.toggle("active", view==="main");
+    tabTimeline.classList.toggle("active", view==="timeline");
+
+    mainPane.style.display = (view==="main") ? "block" : "none";
+    timelinePane.style.display = (view==="timeline") ? "block" : "none";
 
     applyTplBtn.style.display = (mode==="day") ? "inline-block" : "none";
     lockBtn.style.display = (mode==="day") ? "inline-block" : "none";
-
-    const wd = wdMonFirst(parseISO(selectedDate));
-    const wdn = wdName(wd);
-
-    if(mode==="template"){
-      leftTitle.textContent = `Template (${wdn})`;
-      leftSubtitle.textContent = "Edit weekday defaults for both checklist + schedule.";
-    } else {
-      leftTitle.textContent = `Day (${wdn})`;
-      leftSubtitle.textContent = "Use checklist + schedule. Lock the day for ✅/❌.";
-    }
-
-    // Show add fields based on view
-    schedFields.style.display = (view==="schedule" || view==="timeline") ? "flex" : "none";
-
-    // Panes
-    viewChecklistPane.style.display = (view==="checklist") ? "flex" : "none";
-    viewSchedulePane.style.display  = (view==="schedule")  ? "flex" : "none";
-    viewTimelinePane.style.display  = (view==="timeline")  ? "block" : "none";
-
-    viewChecklistPane.innerHTML = "";
-    viewSchedulePane.innerHTML  = "";
-    viewTimelinePane.innerHTML  = "";
 
     const w = workingObj();
     const isDay = (w.type === "day");
     const locked = isDay ? !!w.obj.locked : false;
 
-    // Progress = checklist only
+    // Counts / Progress
     const todos = w.obj.todos || [];
+    const blocks = (w.obj.blocks || []).slice().sort((a,b)=> (a.start||"").localeCompare(b.start||""));
     let done = 0;
     if(isDay){
       for(const t of todos) if(w.obj.todoChecks?.[t.id]) done++;
@@ -827,15 +959,23 @@
     } else {
       progressEl.textContent = `${todos.length}/${todos.length}`;
     }
+    todoCount.textContent = String(todos.length);
+    todoDone.textContent  = String(done);
+    blockCount.textContent = String(blocks.length);
 
-    // Checklist render
+    // Add panel behavior depends on mode + locked
+    if(isDay && locked){
+      // still allow viewing, but block edits by disabling inputs in event handlers
+    }
+
+    // Checklist
+    todoList.innerHTML = "";
     for(const t of todos){
       const row = document.createElement("div");
       row.className = "item todo";
 
       const chk = document.createElement("div");
       const isDone = isDay ? !!w.obj.todoChecks?.[t.id] : false;
-
       chk.className = "check" + (isDone ? " done" : "");
       chk.title = isDay ? (locked ? "Day is locked" : "Toggle done") : "Template (no checkmarks)";
       chk.addEventListener("click", () => {
@@ -851,6 +991,7 @@
       name.spellcheck = false;
       name.textContent = t.name;
       name.addEventListener("blur", () => {
+        if(isDay && locked) { render(); return; }
         t.name = (name.textContent || "").trim() || "Untitled";
         markDirty();
         render();
@@ -861,6 +1002,7 @@
       del.textContent = "Delete";
       del.addEventListener("click", () => {
         askConfirm(`Delete checklist item "${t.name}"?`, () => {
+          if(isDay && locked) { quickToast("Locked", "This day is locked.", "locked"); return; }
           w.obj.todos = (w.obj.todos||[]).filter(x => x.id !== t.id);
           if(isDay) delete w.obj.todoChecks?.[t.id];
           markDirty();
@@ -872,12 +1014,11 @@
       row.appendChild(chk);
       row.appendChild(name);
       row.appendChild(del);
-      viewChecklistPane.appendChild(row);
+      todoList.appendChild(row);
     }
 
-    // Schedule render
-    const blocks = (w.obj.blocks || []).slice().sort((a,b)=> (a.start||"").localeCompare(b.start||""));
-
+    // Schedule
+    blockList.innerHTML = "";
     for(const b of blocks){
       const row = document.createElement("div");
       row.className = "item block";
@@ -888,12 +1029,14 @@
       time.innerHTML = `<b>${b.start || "—"}</b><span>${end}</span>`;
 
       const body = document.createElement("div");
+
       const title = document.createElement("div");
       title.className = "name";
       title.contentEditable = "true";
       title.spellcheck = false;
       title.textContent = b.title || "Untitled block";
       title.addEventListener("blur", () => {
+        if(isDay && locked) { render(); return; }
         b.title = (title.textContent || "").trim() || "Untitled block";
         markDirty();
         render();
@@ -905,7 +1048,7 @@
       const startIn = document.createElement("input");
       startIn.type = "time";
       startIn.value = b.start || "09:00";
-      startIn.disabled = (mode==="day" && locked);
+      startIn.disabled = (isDay && locked);
       startIn.addEventListener("change", ()=>{
         b.start = startIn.value || "09:00";
         markDirty();
@@ -920,7 +1063,7 @@
         if(Number(b.durMin||60) === v) opt.selected = true;
         durSel.appendChild(opt);
       }
-      durSel.disabled = (mode==="day" && locked);
+      durSel.disabled = (isDay && locked);
       durSel.addEventListener("change", ()=>{
         b.durMin = Number(durSel.value || 60);
         markDirty();
@@ -935,25 +1078,30 @@
         if((b.tag||"deep") === tag) opt.selected = true;
         tagSel.appendChild(opt);
       }
-      tagSel.disabled = (mode==="day" && locked);
+      tagSel.disabled = (isDay && locked);
       tagSel.addEventListener("change", ()=>{
         b.tag = tagSel.value || "deep";
         markDirty();
         render();
       });
 
-      const notes = document.createElement("textarea");
-      notes.placeholder = "Notes (optional)";
-      notes.value = b.notes || "";
-      notes.disabled = (mode==="day" && locked);
-      notes.addEventListener("blur", ()=>{
-        b.notes = (notes.value || "").trim();
-        markDirty();
-      });
+      const tag = document.createElement("span");
+      tag.className = "tag pearl";
+      tag.textContent = b.tag || "deep";
 
       meta.appendChild(startIn);
       meta.appendChild(durSel);
       meta.appendChild(tagSel);
+      meta.appendChild(tag);
+
+      const notes = document.createElement("textarea");
+      notes.placeholder = "Notes (optional)";
+      notes.value = b.notes || "";
+      notes.disabled = (isDay && locked);
+      notes.addEventListener("blur", ()=>{
+        b.notes = (notes.value || "").trim();
+        markDirty();
+      });
 
       body.appendChild(title);
       body.appendChild(meta);
@@ -968,6 +1116,7 @@
       del.textContent = "Delete";
       del.addEventListener("click", () => {
         askConfirm(`Delete schedule block "${b.title}"?`, () => {
+          if(isDay && locked) { quickToast("Locked", "This day is locked.", "locked"); return; }
           w.obj.blocks = (w.obj.blocks||[]).filter(x => x.id !== b.id);
           markDirty();
           render();
@@ -980,13 +1129,14 @@
       row.appendChild(time);
       row.appendChild(body);
       row.appendChild(actions);
-      viewSchedulePane.appendChild(row);
+      blockList.appendChild(row);
     }
 
-    // Timeline render
-    if(view==="timeline"){
+    // Timeline (separate tab)
+    if(view === "timeline"){
+      timeline.innerHTML = "";
       if(blocks.length === 0){
-        viewTimelinePane.innerHTML = `<div class="muted">No schedule blocks yet. Add one to see a timeline.</div>`;
+        timeline.innerHTML = `<div class="muted">No schedule blocks yet.</div>`;
       } else {
         for(const b of blocks){
           const row = document.createElement("div");
@@ -1001,7 +1151,7 @@
           card.className = "tlCard";
 
           const top = document.createElement("div");
-          top.className = "top";
+          top.className = "tlTop";
 
           const title = document.createElement("div");
           title.className = "tlTitle";
@@ -1009,12 +1159,15 @@
 
           const meta = document.createElement("div");
           meta.className = "tlMeta";
+
           const tag = document.createElement("span");
-          tag.className = "tag acc";
+          tag.className = "tag pearl";
           tag.textContent = (b.tag || "deep");
+
           const dur = document.createElement("span");
           dur.className = "tag";
           dur.textContent = `${b.durMin||60}m`;
+
           meta.appendChild(tag);
           meta.appendChild(dur);
 
@@ -1030,7 +1183,7 @@
 
           row.appendChild(t);
           row.appendChild(card);
-          viewTimelinePane.appendChild(row);
+          timeline.appendChild(row);
         }
       }
     }
@@ -1079,7 +1232,7 @@
         selectedDate = dateStr;
         datePick.value = selectedDate;
         ensureDay(selectedDate);
-        markDirty(); // since date selection is part of "state" you might want synced
+        markDirty();
         render();
       });
 
@@ -1095,7 +1248,7 @@
         cell.appendChild(mark);
       }
 
-      // little dots: has schedule? has todos? any todo done?
+      // dots: has checklist? has schedule? any done?
       const hint = document.createElement("div");
       hint.className = "calHint";
 
@@ -1168,15 +1321,14 @@
       ensureDay(selectedDate);
       dirty = false;
       setSync("ok", "synced");
-      quickToast("Synced", "Pulled latest planner state.", "ok");
+      quickToast("Synced", "Pulled latest state.", "ok");
       render();
     } else {
-      // No row yet → init
       state = structuredClone(defaultState);
       ensureDay(selectedDate);
       await pushState(true);
       setSync("ok", "initialized");
-      quickToast("Initialized", "Created your planner row in the cloud.", "ok");
+      quickToast("Initialized", "Created cloud row.", "ok");
       render();
     }
   }
@@ -1251,13 +1403,12 @@
   pullBtn.addEventListener("click", pullState);
   pushBtn.addEventListener("click", () => pushState(true));
 
-  // ---------- Tabs / Views ----------
+  // ---------- Mode / View ----------
   tabDay.addEventListener("click", ()=>{ mode="day"; render(); });
   tabTemplate.addEventListener("click", ()=>{ mode="template"; render(); });
 
-  viewChecklist.addEventListener("click", ()=>{ view="checklist"; render(); });
-  viewSchedule.addEventListener("click", ()=>{ view="schedule"; render(); });
-  viewTimeline.addEventListener("click", ()=>{ view="timeline"; render(); });
+  tabMain.addEventListener("click", ()=>{ view="main"; render(); });
+  tabTimeline.addEventListener("click", ()=>{ view="timeline"; render(); });
 
   // ---------- Date ----------
   datePick.addEventListener("change", () => {
@@ -1267,15 +1418,23 @@
     render();
   });
 
-  // ---------- Quick Add controls ----------
-  addBtn.addEventListener("click", ()=> {
-    addPane.style.display = "block";
-    addTitle.focus();
-  });
-  hideAddBtn.addEventListener("click", ()=> {
-    addPane.style.display = "none";
+  // ---------- Add panel (no prompts) ----------
+  let addType = "todo"; // todo | block
+
+  function showAdd(type){
+    addType = type;
+    addPanel.style.display = "block";
+    addSchedFields.style.display = (type === "block") ? "flex" : "none";
+    addTitleLabel.textContent = (type === "block") ? "ADD SCHEDULE" : "ADD CHECKLIST";
+    addTypePill.textContent = (type === "block") ? "Schedule Block" : "Checklist Item";
     clearConfirm();
-  });
+    addTitle.value = "";
+    addTitle.focus();
+  }
+
+  addTodoBtn.addEventListener("click", ()=> showAdd("todo"));
+  addBlockBtn.addEventListener("click", ()=> showAdd("block"));
+  hideAddBtn.addEventListener("click", ()=> { addPanel.style.display="none"; clearConfirm(); });
 
   addCommit.addEventListener("click", () => {
     const title = (addTitle.value || "").trim();
@@ -1287,11 +1446,11 @@
     const w = workingObj();
     const isDay = (w.type==="day");
     if(isDay && w.obj.locked){
-      quickToast("Day locked", "Unlocking is intentionally not included. Edit tomorrow or use template.", "locked");
+      quickToast("Locked", "This day is locked.", "locked");
       return;
     }
 
-    if(view === "checklist"){
+    if(addType === "todo"){
       const t = mkTodo(title);
       w.obj.todos ||= [];
       w.obj.todos.push(t);
@@ -1299,10 +1458,11 @@
         w.obj.todoChecks ||= {};
         w.obj.todoChecks[t.id] = false;
       }
-      addTitle.value = "";
       markDirty();
       render();
       quickToast("Added", "Checklist item created.", "ok");
+      addTitle.value = "";
+      addTitle.focus();
     } else {
       const start = addStart.value || "09:00";
       const dur = Number(addDur.value || 60);
@@ -1310,17 +1470,18 @@
       const b = mkBlock(title, start, dur, tag);
       w.obj.blocks ||= [];
       w.obj.blocks.push(b);
-      addTitle.value = "";
       markDirty();
       render();
       quickToast("Added", "Schedule block created.", "ok");
+      addTitle.value = "";
+      addTitle.focus();
     }
   });
 
-  // Apply template to day (inline confirm)
+  // Apply template → day
   applyTplBtn.addEventListener("click", () => {
     if(mode!=="day") return;
-    askConfirm("Overwrite this date with the weekday template? (Resets checks + unlocks)", () => {
+    askConfirm("Overwrite this date with weekday template? (Resets checks + unlocks)", () => {
       const wd = wdMonFirst(parseISO(selectedDate));
       const tpl = state.templates[wd] || { todos:[], blocks:[] };
 
@@ -1341,7 +1502,7 @@
     });
   });
 
-  // Lock
+  // Lock day
   lockBtn.addEventListener("click", () => {
     if(mode!=="day") return;
     ensureDay(selectedDate);
@@ -1350,7 +1511,7 @@
     day.locked = true;
     markDirty();
     render();
-    quickToast("Locked", `Day result: ${day.result === "pass" ? "PASS ✅" : "FAIL ❌"}`, day.result==="pass" ? "ok" : "warn");
+    quickToast("Locked", `Result: ${day.result === "pass" ? "PASS ✅" : "FAIL ❌"}`, day.result==="pass" ? "ok" : "warn");
   });
 
   // ---------- Boot ----------
